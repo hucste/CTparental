@@ -31,7 +31,7 @@ if($Language == 'fr'){
  $l_info1 = "08h00 à 24h00 ou 08h00 à 12h00 et 14h00 à 24h00";
  $week = array( "lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche");
   $tmaxinfo= "Minutes max /24 heurs";
-  $l_switch_LogOFF="Déconnection";
+  $l_switch_LogOFF="Déconnexion";
   $l_hours_error1="un mauvais format horaire a été trouvé :exemple 8h30 doit s'écrire 08h30";
   $l_hours_error2="incohérence horaire : ";
   $l_hours_error3="Vous devez rentrer une valeur entre 1 et 1440 minutes.";

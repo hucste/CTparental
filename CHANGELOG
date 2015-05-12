@@ -1,4 +1,26 @@
-# 09/01/2014
+# 11/05/2015
+# Version 3.94      correction du bug d'attente infini lors de l'install avec la logitec ubuntu + amélioration des cri-taire de sécurité du couple login mots de pass de l'interface.
+					activation du group privilégier par défault + ajout automatique des nouvaux utilisateurs en temps que utilisateur non filtrée.
+					correction de bug divers.
+# Version 3.93-2    correction du bug de paramétrage proxy a la desactivation total du controle parental.
+# Version 3.93-1 	simplification du code
+					ajous de la suprésion des certificats ne servant plus de panière automatique.
+					meilleur intégration de la présence ou non de resolvconf.
+					désinstalation plus propre.
+					désativation de l'ipv6
+# Version 3.93   corectif bug xubuntu parametrage proxy automatique non pris en compte + bug proxy persistant une fois CTparental desinstaller.
+# Version 3.92   install du certificat automatique . + parametrage proxy automatique (nécesite un redemarage session en ca d'ajout ou de suppression du groupe ctoff.
+#				 ajout d'une nouvelle dépendance libnss3-tools pour l'utilisation de certutil.
+# Version 3.91   ajout de la gestion de règle personnalisées pour iptables .
+# Version 3.90-8 correction bug port 443 non bloquer pour les usager filtré qui pouvait passer outre le proxy.
+# Version 3.90-7 ajout du + force SafeSearch bing (en http seulement) sont acces étant verouiller en https pour les usagers filtré.
+# Version 3.90-6 corectif bug http://r.duckduckgo.com n'était pas redirigé sur safe.duckduckgo.com ce qui poser des problême l'ors de l'acces aux reponses.
+# Version 3.90-5 corectif bug Noms de domaine réhabilités non pris en compte par dansguardian.
+# Version 3.90-4 corectif bug SafeSearch google qui ne fonctioner pas si curl n'était pas installer .
+# Version 3.90-3 ajout d'un liens pour Installer le certificat racine de CTparental sur la page d'erreur
+# Version 3.90-2 corection de bug certificat search.yahoo.com 
+# Version 3.90-1 corection de bug sur la redirection forcer vers safe.duckduckgo.com
+# Version 3.90  ajout de dansguardian + privoxy + force SafeSearch google + force SafeSearch duckduckgo + bloquage Search bing et yahoo
 # Version 3.84  Abendont des scripte a l'ouverture de session au profit de règles iptables dedier au utilisateur filtrée.
 # Version 3.83 	Correctif de bugs, notament celui qui pouvais suprimer trops de paquet a la desinstallation (en mode manuel)
 #				Compatibilitée avec mageia 3 et 4 

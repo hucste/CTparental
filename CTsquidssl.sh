@@ -16,17 +16,7 @@ if [ ! $UID -le 499 ]; then # considère comme root tous les utilisateurs avec u
 fi
 fi
 fi
-if  [ $(groups $(whoami) | grep -c -E "( ctoff$)|( ctoff )") -eq 0 ];then
-  export https_proxy=http://127.0.0.1:8080
-  export HTTPS_PROXY=http://127.0.0.1:8080
-  export http_proxy=http://127.0.0.1:8080
-  export HTTP_PROXY=http://127.0.0.1:8080
-else
-  unset https_proxy
-  unset HTTPS_PROXY
-  unset http_proxy
-  unset HTTP_PROXY
-fi
+
 
 noinstalldep="0"
 nomanuel="0"
@@ -83,7 +73,7 @@ IPRULES=OFF
 EOF
 
 fi
-FILTRAGEISOFF=$(cat $FILE_CONF | grep -c DNSMASQ=OFF)
+
 
 
 
@@ -109,10 +99,11 @@ DAYS=( $DAYS )
 DAYSPAM=( Mo Tu We Th Fr Sa Su )
 DAYSCRON=( mon tue wed thu fri sat sun )
 PROXYport=${PROXYport:="8888"}
+PROXYports=${PROXYports:="8989"}
 DANSGport=${DANSGport:="8080"}
-PROXYuser=${PROXYuser:="privoxy"}
+PROXYuser=${PROXYuser:="proxy"}
 #### DEPENDANCES par DEFAULT #####
-DEPENDANCES=${DEPENDANCES:=" dnsmasq lighttpd php5-cgi libnotify-bin notification-daemon iptables-persistent rsyslog dansguardian privoxy openssl libnss3-tools whiptail "}
+DEPENDANCES=${DEPENDANCES:=" dnsmasq lighttpd php5-cgi libnotify-bin notification-daemon iptables-persistent rsyslog dansguardian openssl libnss3-tools "}
 #### PACKETS EN CONFLI par DEFAULT #####
 CONFLICTS=${CONFLICTS:=" mini-httpd apache2 firewalld "}
 
@@ -130,9 +121,13 @@ DNSMASQrestart=${DNSMASQrestart:="$CMDSERVICE dnsmasq restart "}
 NWMANAGERstop=${NWMANAGERstop:="$CMDSERVICE network-manager stop"}
 NWMANAGERstart=${NWMANAGERstart:="$CMDSERVICE network-manager start"}
 NWMANAGERrestart=${NWMANAGERrestart:="$CMDSERVICE network-manager restart"}
-IPTABLESsave=${IPTABLESsave:="$CMDSERVICE iptables-persistent save"}
+IPTABLESsave=${IPTABLESsave:="$CMDSERVICE netfilter-persistent save"}
 DANSGOUARDIANrestart=${DANSGOUARDIANrestart:="$CMDSERVICE dansguardian restart"}
-PRIVOXYrestart=${PRIVOXYrestart:="$CMDSERVICE privoxy restart"}
+SQUIDrestart=${SQUIDrestart:="$CMDSERVICE squid3 restart"}
+SQUIDstop=${SQUIDstop:="$CMDSERVICE squid3 stop"}
+SQUIDstart=${SQUIDstart:="$CMDSERVICE squid3 start"}
+
+
 #### LOCALISATION du fichier PID lighttpd par default ####
 LIGHTTPpidfile=${LIGHTTPpidfile:="/var/run/lighttpd.pid"}
 
@@ -167,13 +162,12 @@ CMDINSTALL=""
 IPTABLES=${IPTABLES:="/sbin/iptables"}
 ADDUSERTOGROUP=${ADDUSERTOGROUP:="gpasswd -a "}
 DELUSERTOGROUP=${DELUSERTOGROUP:="gpasswd -d "}
-PRIVOXYCONF=${PRIVOXYCONF:="/etc/privoxy/config"}
-PRIVOXYUSERA=${PRIVOXYUSERA:="/etc/privoxy/user.action"}
-PRIVOXYCTA=${PRIVOXYCTA:="/etc/privoxy/ctparental.action"}
-CTFILEPROXY=${CTFILEPROXY:="$DIR_CONF/CT-proxy.sh"}
-XSESSIONFILE=${XSESSIONFILE:="/etc/X11/Xsession"}
 REPCAMOZ=${REPCAMOZ:="/usr/share/ca-certificates/mozilla/"}
-XTERMINAL=${XTERMINAL:="x-terminal-emulator --hide-menubar  --hide-toolbar -e "}
+
+SQUID3SSLCONF=${SQUID3SSLCONF:="/etc/squid3/squid.conf"}
+PEMSRVSQUID=${PEMSRVSQUID:="/etc/squid3/ssl_ca"}
+SSLCRTSREP=${SSLCRTSREP:="/var/lib/ssl_db"}
+SSLCRTCMD=${SSLCRTCMD:="/usr/lib/squid3/ssl_crtd"}
 if [ $(yum help 2> /dev/null | wc -l ) -ge 50 ] ; then
    ## "Distribution basée sur yum exemple redhat, fedora..."
    CMDINSTALL=${CMDINSTALL:="yum install "}
@@ -211,7 +205,6 @@ DNS1=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | 
 DNS2=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f2)
 
 resolvconffixon () {
-echo "resolvconffixon"
 # redemare dnsmasq 
 $DNSMASQstop
 
@@ -219,20 +212,19 @@ resolvconf -u 2&> /dev/null
 if [ $? -eq 1 ];then # si resolvconf et bien installé
 resolvconf -u
 # on s'assure que les dns du FAI soit bien ajoutés au fichier /etc/resolv.conf malgré l'utilisation de dnsmasq.
-cat /etc/resolv.conf | grep ^nameserver | sort -u > /etc/resolvconf/resolv.conf.d/tail
+cat cat /etc/resolv.conf | grep ^nameserver | sort -u > /etc/resolvconf/resolv.conf.d/tail
 fi
 $DNSMASQstart
-echo "fin resolvconffixon"
+
 }
 resolvconffixoff () {
-echo "resolvconffixoff"
 $DNSMASQstop	
 resolvconf -u 2&> /dev/null 
 if [ $? -eq 1 ];then # si resolvconf et bien installé
 echo > /etc/resolvconf/resolv.conf.d/tail
 resolvconf -u
 fi
-echo "fin resolvconffixoff"
+
 }
 
 
@@ -289,7 +281,6 @@ EOF
 
 }
 confdansguardian () {
-echo "confdansguardian"
   $SED "s?^loglevel =.*?loglevel = 0?g" $FILEConfDans   
   $SED "s?^languagedir =.*?languagedir = '/etc/dansguardian/languages'?g" $FILEConfDans  
   $SED "s?^language =.*?language = 'french'?g" $FILEConfDans  
@@ -305,126 +296,106 @@ echo "confdansguardian"
 
 
 $DANSGOUARDIANrestart
-echo "fin confdansguardian" 
+  
 }
-confprivoxy () {
-echo "confprivoxy"
-$SED "s?^debug.*?debug = 0?g"  $PRIVOXYCONF  
-$SED "s?^listen-address.*?listen-address  127.0.0.1:$PROXYport?g"  $PRIVOXYCONF 
+confsquid3ssl () {
 
-	test=$(grep "actionsfile ctparental.action" $PRIVOXYCONF |wc -l)
-	if [ $test -ge "1" ] ; then
-		$SED "s?actionsfile.*ctparental.*?actionsfile ctparental\.action      # ctparental customizations?g" $PRIVOXYCONF
-	else
-	    nline=$(grep "actionsfile.*user.action" $PRIVOXYCONF -n | cut -d":" -f1)
-		$SED $nline"i\actionsfile ctparental.action      # ctparental customizations" $PRIVOXYCONF
-	fi
-	unset test
+cat << EOF > $SQUID3SSLCONF  
 
-echo '{{alias}}' > $PRIVOXYCTA
-echo '+crunch-all-cookies = +crunch-incoming-cookies +crunch-outgoing-cookies' >> $PRIVOXYCTA
-echo '-crunch-all-cookies = -crunch-incoming-cookies -crunch-outgoing-cookies' >> $PRIVOXYCTA
-echo ' allow-all-cookies  = -crunch-all-cookies -session-cookies-only -filter{content-cookies}' >> $PRIVOXYCTA
-echo ' allow-popups       = -filter{all-popups} -filter{unsolicited-popups}' >> $PRIVOXYCTA
-echo '+block-as-image     = +block{Blocked image request.} +handle-as-image' >> $PRIVOXYCTA
-echo '-block-as-image     = -block' >> $PRIVOXYCTA
-echo 'fragile     = -block -crunch-all-cookies -filter -fast-redirects -hide-referer -prevent-compression' >> $PRIVOXYCTA
-echo 'shop        = -crunch-all-cookies allow-popups' >> $PRIVOXYCTA
-echo 'myfilters   = +filter{html-annoyances} +filter{js-annoyances} +filter{all-popups}\' >> $PRIVOXYCTA
-echo '              +filter{webbugs} +filter{banners-by-size}' >> $PRIVOXYCTA
-echo 'allow-ads   = -block -filter{banners-by-size} -filter{banners-by-link}' >> $PRIVOXYCTA
-echo '{ fragile }' >> $PRIVOXYCTA
-echo 'http://127.0.0.10.*' >> $PRIVOXYCTA
-echo 'http://localhost.*' >> $PRIVOXYCTA
-echo '# BING Add &adlt=strict' >> $PRIVOXYCTA
-echo '{+redirect{s@$@&adlt=strict@}}' >> $PRIVOXYCTA
-echo '.bing./.*[&?]q=' >> $PRIVOXYCTA
-echo '{-redirect}' >> $PRIVOXYCTA
-echo '.bing./.*&adlt=strict' >> $PRIVOXYCTA
-echo >> $PRIVOXYCTA
-echo '# dailymotion.com ' >> $PRIVOXYCTA
-echo '# remplace http://www.dailymotion.com/family_filter?enable=false....' >> $PRIVOXYCTA
-echo '# par http://www.dailymotion.com/family_filter?enable=true...' >> $PRIVOXYCTA
-echo '{+redirect{s@enable=[^&]+@enable=true@}}' >> $PRIVOXYCTA
-echo ' .dailymotion.*/.*enable=(?!true)' >> $PRIVOXYCTA
+## Port d'ecoute et option ##
+
+http_port 127.0.0.1:$PROXYport intercept
+https_port 127.0.0.1:$PROXYports intercept ssl-bump dynamic_cert_mem_cache_size=4MB cert=$PEMSRVSQUID/squidca.crt key=$PEMSRVSQUID/squidca.key
+
+# Attention si vous modifiez les valeurs de la ligne suivante : lancez squid3 -f $SQUID3SSLCONF  -z pour reconstruire le cache !
+## Mise en cache ##
+#cache_dir ufs /var/spool/squid3.3 1024 256 256
+#cache_dir null /tmp
+
+# Les journaux
+cache_access_log /var/log/squid3/access.log squid
+cache_log /var/log/squid3/cache.log
+cache_store_log /var/log/squid3/store.log
+cache_swap_log /var/log/squid3/cache_swap.log
+
+# Configuration minimum recommandée
+
+acl Safe_ports port 80 # http
+acl Safe_ports port 21 # ftp
+acl Safe_ports port 443 563 # https, snews
+acl Safe_ports port 70 # gopher
+acl Safe_ports port 210 # wais
+acl Safe_ports port 1025-65535 # unregistered ports
+acl Safe_ports port 280 # http-mgmt
+acl Safe_ports port 488 # gss-http
+acl Safe_ports port 591 # filemaker
+acl Safe_ports port 777 # multiling http
+acl CONNECT method CONNECT
+
+# Définition des réseaux
+
+#acl mon_reseaueth src 192.168.182.2
+
+# Les accès ou non
+http_access allow localhost
+#http_access allow mon_reseaueth
+http_access deny all
+
+# La redirection sur squidguard pour le contrôle
+
+##redirect_program /usr/local/bin/squidGuard -c /etc/squid3/squidGuard.conf
+##redirect_children 100 
+
+# Definition des directive SSL
+ssl_bump server-first all
+sslproxy_cert_error allow all
+sslproxy_cert_adapt setCommonName ssl::certDomainMismatch
+
+coredump_dir /var/spool/squid3
+
+# Memory Cache Options
+# You may want to increase 64 MB RAM to something higher.
+cache_mem 64 MB
+maximum_object_size_in_memory 512 KB
+memory_replacement_policy heap GDSF
+refresh_pattern .		0	20%	4320
+refresh_pattern ^ftp:		1440	20%	10080
+refresh_pattern ^gopher:	1440	0%	1440
+refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
 
 
-$PRIVOXYrestart
-setproxy
-echo "fin confprivoxy"
-}
-unsetproxy () {
-for user in `listeusers` ; do	
-	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [  -f $HOMEPCUSER/.profile ] ; then
-	test=$(grep "^### CTparental ###" $HOMEPCUSER/.profile |wc -l)
-		if [ $test -eq "1" ] ; then	 
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		fi
-	unset test
-	fi	
-done
-test=$(grep "^### CTparental ###" $XSESSIONFILE |wc -l)
-		if [ $test -eq "1" ] ; then	 
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		fi
-unset test
-}
-setproxy () {
-if [  -f $XSESSIONFILE ] ; then
-test=$(grep "^### CTparental ###" $XSESSIONFILE |wc -l)
-		if [ $test -eq "0" ] ; then	 
-		 $SED  2"i\### CTparental ###" $XSESSIONFILE
-		 $SED  3'i\if  [ \$(groups \$(whoami) | grep -c -E "( ctoff\$)|( ctoff )") -eq 0 ];then' $XSESSIONFILE
-		 $SED  4"i\  export https_proxy=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  6"i\  export http_proxy=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  8"i\fi" $XSESSIONFILE
-		fi
-unset test
-fi
-for user in `listeusers` ; do	
-	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [  -f $HOMEPCUSER/.profile ] ; then
-	test=$(grep "^### CTparental ###" $HOMEPCUSER/.profile |wc -l)
-		if [ $test -eq "0" ] ; then	 
-		 $SED  2"i\### CTparental ###" $HOMEPCUSER/.profile
-		 $SED  3'i\if  [ \$(groups \$(whoami) | grep -c -E "( ctoff\$)|( ctoff )") -eq 0 ];then' $HOMEPCUSER/.profile
-		 $SED  4"i\  export https_proxy=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  6"i\  export http_proxy=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  8"i\fi" $HOMEPCUSER/.profile
-		fi
-	unset test
-	fi
-	
-done
+sslcrtd_program $SSLCRTCMD  -s $SSLCRTSREP -M 4MB
+sslcrtd_children 2
+ 
+# On renseigne le nom de machine qui fait serveur
+
+visible_hostname proxyCT
+append_domain .localdomain
+dns_nameservers 127.0.0.1
+
+##icap_enable on
+##icap_send_client_ip on
+#icap_send_client_username on
+#icap_client_username_header X-Authenticated-User
+##icap_service service_req reqmod_precache bypass=1 icap://127.0.0.1:1344/squidclamav
+##adaptation_access service_req allow all
+##icap_service service_resp respmod_precache bypass=1 icap://127.0.0.1:1344/squidclamav
+##adaptation_access service_resp allow all
+
+EOF
+squid3 -f $SQUID3SSLCONF  -z 
+$SQUIDstart
 }
 
 addadminhttpd() {
 if [ ! -f $PASSWORDFILEHTTPD ] ; then
     echo -n > $PASSWORDFILEHTTPD   
 fi
-
 chown root:$USERHTTPD $PASSWORDFILEHTTPD
 chmod 640 $PASSWORDFILEHTTPD
 USERADMINHTTPD=${1}
 pass=${2}
-hash=$(echo -n "$USERADMINHTTPD:$REALMADMINHTTPD:$pass" | md5sum | cut -b -32)
+hash=`echo -n "$USERADMINHTTPD:$REALMADMINHTTPD:$pass" | md5sum | cut -b -32`
 ligne=$(echo "$USERADMINHTTPD:$REALMADMINHTTPD:$hash")
 $SED "/^$USERADMINHTTPD:$REALMADMINHTTPD.*/d" $PASSWORDFILEHTTPD
 echo $ligne >> $PASSWORDFILEHTTPD
@@ -618,32 +589,7 @@ echo
 $UMFILEtmp
 rm -f $FILE_tmp
 date +%H:%M:%S
-## on force a passer par forcesafesearch.google.com de maninière transparente
-forcesafesearchgoogle=`host -ta forcesafesearch.google.com|cut -d" " -f4`	# retrieve forcesafesearch.google.com ip
-echo "# nosslsearch redirect server for google" > $DIR_DNS_BLACKLIST_ENABLED/googlenosslsearch.conf	
-for subdomaingoogle in `wget http://www.google.com/supported_domains -O - 2> /dev/null `  # pour chaque sous domain de google
-do 
-echo "address=/www$subdomaingoogle/$forcesafesearchgoogle" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf	
-done
-## on force a passer par safe.duckduckgo.com
-for ipsafeduckduckgo in `host -ta safe.duckduckgo.com|cut -d" " -f4 | grep -v alias`
-do
-echo "address=/safe.duckduckgo.com/$ipsafeduckduckgo" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
-done
-echo "address=/duckduckgo.com/127.0.0.1" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
 
-## on attribut une seul ip pour les recherches sur bing de manière a pouvoir bloquer sont acces en https dans iptables.
-## et ainci forcer le safesearch via privoxy.
-## tous les sous domaines type fr.bing.com ... retourneront l'ip de www.bing.com
-echo "address=/.bing.com/$(host -ta bing.com|cut -d" " -f4)" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
-
-## on force a passer par search.yahoo.com pour redirection url par lighttpd
-#ipsearchyahoo=`host -ta search.yahoo.com|cut -d" " -f4 | grep [0-9]`
-#echo "address=/safe.search.yahoo.com/$ipsearchyahoo" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
-#echo "address=/search.yahoo.com/127.0.0.1" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
-
-# on bloque les moteurs de recherche pas asser sur
-echo "address=/search.yahoo.com/127.0.0.10" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
 
 
 
@@ -651,42 +597,41 @@ echo "address=/search.yahoo.com/127.0.0.10" >> $DIR_DNS_BLACKLIST_ENABLED/forces
 }
 
 dnsmasqon () {
-echo "dnsmasqon"
-   categorie1=$(sed -n "1 p" $CATEGORIES_ENABLED) # on considère que si la 1ère catégorie activée est un blacklist on fonctionne par blacklist.
-   is_blacklist=$(grep $categorie1 $BL_CATEGORIES_AVAILABLE |wc -l)
+   categorie1=`sed -n "1 p" $CATEGORIES_ENABLED` # on considère que si la 1ère catégorie activée est un blacklist on fonctionne par blacklist.
+   is_blacklist=`grep $categorie1 $BL_CATEGORIES_AVAILABLE |wc -l`
    if [ $is_blacklist -ge "1" ] ; then
    $SED "s?^DNSMASQ.*?DNSMASQ=BLACK?g" $FILE_CONF
-cat << EOF > $DNSMASQCONF 
-# Configuration file for "dnsmasq with blackhole"
-# Inclusion de la blacklist <domains> de Toulouse dans la configuration
-conf-dir=$DIR_DNS_BLACKLIST_ENABLED
-# conf-file=$DIR_DEST_ETC/alcasar-dns-name   # zone de definition de noms DNS locaux
-interface=lo
-listen-address=127.0.0.1
-no-dhcp-interface=$interface_WAN
-bind-interfaces
-cache-size=1024
-domain-needed
-expand-hosts
-bogus-priv
-port=54
-server=$DNS1
-server=$DNS2  
+   cat << EOF > $DNSMASQCONF
+         # Configuration file for "dnsmasq with blackhole"
+   # Inclusion de la blacklist <domains> de Toulouse dans la configuration
+   conf-dir=$DIR_DNS_BLACKLIST_ENABLED
+   # conf-file=$DIR_DEST_ETC/alcasar-dns-name   # zone de definition de noms DNS locaux
+   interface=lo
+   listen-address=127.0.0.1
+   no-dhcp-interface=$interface_WAN
+   bind-interfaces
+   cache-size=1024
+   domain-needed
+   expand-hosts
+   bogus-priv
+   port=54
+   server=$DNS1
+   server=$DNS2
+   
 EOF
-
 resolvconffixon # redemare dnsmasq en prenent en compte la présence ou non de resolvconf.
+# $DNSMASQrestart
 $DANSGOUARDIANrestart
-$PRIVOXYrestart
+$SQUIDrestart
 else
   dnsmasqwhitelistonly
 fi
-echo "fin dnsmasqon"
 }
 dnsmasqoff () {
    $SED "s?^DNSMASQ.*?DNSMASQ=OFF?g" $FILE_CONF
    resolvconffixoff
    $DANSGOUARDIANrestart
-$PRIVOXYrestart
+$SQUIDrestart
 }
 ipMaskValide() {
 ip=$(echo $1 | cut -d"/" -f1)
@@ -862,45 +807,42 @@ initfileiptables () {
 }
 
 iptablesreload () {
-	echo "iptablesreload"
-   ### SUPPRESSION de TOUTES LES ANCIENNES TABLES (OUVRE TOUT!!) ###
+   
    $IPTABLES -F
    $IPTABLES -X
-   $IPTABLES -t nat -D OUTPUT -j ctparental 2> /bin/null
-   $IPTABLES -t nat -F ctparental  2> /bin/null
-   $IPTABLES -t nat -X ctparental  2> /bin/null
+   $IPTABLES -t nat -D OUTPUT -j ctparental || /bin/true
+   $IPTABLES -t nat -F ctparental || /bin/true
+   $IPTABLES -t nat -X ctparental || /bin/true
    $IPTABLES -P INPUT ACCEPT
    $IPTABLES -P OUTPUT ACCEPT
    $IPTABLES -P FORWARD ACCEPT
-   if [ ! $FILTRAGEISOFF -eq 1 ];then
-	 $IPTABLES -t nat -N ctparental
-     $IPTABLES -t nat -A OUTPUT -j ctparental
-      
-      # Force privoxy a utiliser dnsmasq sur le port 54
+
+   # Redirect DNS requests
+   # note: http://superuser.com/a/594164
+#resolvconffix
+	## parametrage pour ce protéger contre les attaques par spoofing et par synflood
+    ### SUPPRESSION de TOUTES LES ANCIENNES TABLES (OUVRE TOUT!!) ###
+    $IPTABLES -t nat -N ctparental
+    $IPTABLES -t nat -A OUTPUT -j ctparental
+
+   # Force non priviledged users to use dnsmasq
 	  $IPTABLES -t nat -A ctparental -m owner --uid-owner "$PROXYuser" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
-	  
-	  # on interdit l'accès a bing en https .
-	  ipbing=$(cat $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf | grep "address=/.bing.com/" | cut -d "/" -f3)
-	  $IPTABLES -A OUTPUT -d $ipbing -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a bing
-	  
-	  for ipdailymotion in $(host -ta dailymotion.com|cut -d" " -f4)  
-	  do 
-		$IPTABLES -A OUTPUT -d $ipdailymotion -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a dailymotion.com
-	  done
+	 
 
       for user in `listeusers` ; do
       if  [ $(groups $user | grep -c -E "( ctoff$)|( ctoff )" ) -eq 0 ];then
-         #on rediriges les requet DNS des usagers filtrés sur dnsmasq
          $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 53 -j DNAT --to 127.0.0.1:54 
          $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
-         #force passage par dansgourdian pour les utilisateurs filtrés 
-		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 80 -j DNAT --to 127.0.0.1:$DANSGport
-		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport $PROXYport -j DNAT --to 127.0.0.1:$DANSGport
-		 #$IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 443 -j DNAT --to 127.0.0.1:$DANSGport  # proxy https transparent n'est pas possible avec privoxy
-		 $IPTABLES -A OUTPUT ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 443 -j REJECT # on interdit l'aces https sans passer par le proxy pour les utilisateur filtré.	
+         #force passage par dansgourdian si présent
+
+
+	     #$IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport $PROXYport -j DNAT --to 127.0.0.1:$DANSGport
+		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 80 -j DNAT --to 127.0.0.1:$PROXYport
+		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 443 -j DNAT --to 127.0.0.1:$PROXYports  # proxy https transparent n'est pas possible avec privoxy
+		#		$IPTABLES -A OUTPUT -m owner --uid-owner "$user" -p tcp --dport 443 -j REJECT # on interdit l'aces https sans passer par le proxy pour les utilisateur filtré.
+
       fi
       done
-   fi
 
    if [ $(cat $FILE_CONF | grep -c IPRULES=ON ) -eq 1 ];then
     ipglobal
@@ -913,31 +855,7 @@ $IPTABLES -A FORWARD -j LOG  --log-prefix "iptables: "
 # Save configuration so that it survives a reboot
    $IPTABLESsave
    
-updatecauser
-setproxy
-echo "fin iptablesreload"
-}
-updatecauser () {
-echo "updatecauser"
-for user in `listeusers` ; do	
-	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [ -d $HOMEPCUSER ] ;then
-			#on install le certificat dans tous les prifile firefoxe utilisateur existant 
-		for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
-			# on supprime tous les anciens certificats
-			while true
-			do
-				certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
-				if [ ! $? -eq 0 ];then 
-					break
-				fi
-			done
-			# on ajoute le nouveau certificat
-			certutil -A -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -i $DIRHTML/cactparental.crt -n"CActparental - ctparental" -t "CT,c,c"		
-		done
-	fi
-done
-echo "fin updatecauser"
+updateprofileuser
 }
 iptablesoff () {
 
@@ -946,11 +864,10 @@ iptablesoff () {
    $IPTABLES -P INPUT ACCEPT
    $IPTABLES -P OUTPUT ACCEPT
    $IPTABLES -P FORWARD ACCEPT
-   $IPTABLES -t nat -D OUTPUT -j ctparental  2> /bin/null
-   $IPTABLES -t nat -F ctparental  2> /bin/null
-   $IPTABLES -t nat -X ctparental  2> /bin/null
+   $IPTABLES -t nat -D OUTPUT -j ctparental || /bin/true
+   $IPTABLES -t nat -F ctparental || /bin/true
+   $IPTABLES -t nat -X ctparental || /bin/true
    $IPTABLESsave
-   unsetproxy
 }
 dnsmasqwhitelistonly  () {
    $SED "s?^DNSMASQ.*?DNSMASQ=WHITE?g" $FILE_CONF
@@ -973,15 +890,14 @@ EOF
 
 $DNSMASQrestart
 $DANSGOUARDIANrestart
-$PRIVOXYrestart
+$SQUIDrestart
 }
 
 
 FoncHTTPDCONF () {
-echo "FoncHTTPDCONF"
 $LIGHTTPDstop
 rm -rf $DIRHTML/*
-mkdir $DIRHTML 2> /dev/null
+mkdir -v $DIRHTML
 if [ ! -z $DIRhtmlPersonaliser ];then
    cp -r $DIRhtmlPersonaliser/* $DIRHTML
 else
@@ -1055,11 +971,12 @@ C0zyXE1c3gMeAR5DteXeY23NIJZzU/eVuFXLpgPD/RZUt/3AKtwqW0vyPvXW0vpBLCcyDJiGC+XF
 xZ+Heq2pz0FgNS54K4DVPi7H8iWsIFZy+8dcAEwGxpd9nZpwz9txl16VvtYBr9e7FUQrCjuIAxEZ
 CYzDhXIccDzQjrsyqL3i59LVQnuAnrLv5T9/BWzBhW4Lqna/d4X/A/bydTBs1YRqAAAAAElFTkSu
 QmCC" />
+<br><a href="http://localhost/CTparental/cactparental.crt">Installer le certificat racine de CTparental</a><br>
 </CENTER>
 </BODY>
 </HTML>
 EOF
-#<br><a href="http://localhost/CTparental/cactparental.crt">Installer le certificat racine de CTparental</a><br>
+
 fi
 ## GENERATION
 
@@ -1157,22 +1074,36 @@ fi
 mkdir -p $DIRCONFENABLEDHTTPD
 mkdir -p $DIRadminHTML
 cp -rf CTadmin/* $DIRadminHTML/
-
-### configuration du login mot de passe de l'interface d'administration
-if [ $nomanuel -eq 0 ]; then  
-	configloginpassword
-else
-	## variable récupérer par éritage du script DEBIAN/postinst
-	addadminhttpd "$debconfloginhttp" "$debconfpassword"
-	unset debconfpassword
-	unset debconfloginhttp
-fi
-
-
-
+#if [ $noinstalldep = "1" ]; then
+#	addadminhttpd "admin" "admin"
+#else
+	clear 
+	echo "Entrer le login pour l'interface d'administration :"
+	while (true); do
+		 read loginhttp
+		 case $loginhttp in
+			 * )
+			 echo "login:  $loginhttp" > /root/passwordCTadmin
+			 break
+			 ;;
+		 esac
+	done
+	clear
+	echo "Entrer le mot de passe de $loginhttp :"
+	while (true); do
+		 read password
+		 case $password in
+			 * )
+			 echo "password: $password" >> /root/passwordCTadmin
+		         addadminhttpd "$loginhttp" "$password"
+			 break
+			 ;;
+		 esac
+	done
+#fi
 chmod 700 /root/passwordCTadmin
 chown root:root /root/passwordCTadmin
-mkdir /run/lighttpd/ 2> /dev/null
+mkdir /run/lighttpd/
 chmod 770 /run/lighttpd/
 chown root:$GROUPHTTPD /run/lighttpd/
 cat << EOF > $CTPARENTALCONFHTTPD
@@ -1207,31 +1138,15 @@ fastcgi.server = (
 }
 
 
-\$HTTP["host"] =~ "search.yahoo.com" {
-	\$SERVER["socket"] == ":443" {
-	ssl.engine = "enable"
-	ssl.pemfile = "$PEMSRVDIR/search.yahoo.com.pem" 
-	server.document-root = "$DIRHTML"
-	server.errorfile-prefix = "$DIRHTML/err" 
-	}
-}
 
 \$HTTP["host"] =~ "localhost" {
 	\$SERVER["socket"] == ":443" {
 	ssl.engine = "enable"
 	ssl.pemfile = "$PEMSRVDIR/localhost.pem" 	
+	#ssl.ca-file = "$CADIR/cactparental.crt"
 	}
 }
-\$HTTP["host"] =~ "duckduckgo.com" {
-	\$SERVER["socket"] == ":443" {
-	ssl.engine = "enable"
-	ssl.pemfile = "$PEMSRVDIR/duckduckgo.pem" 
-	url.redirect  = (".*" => "https://safe.duckduckgo.com\$0" )
-	}
-	\$SERVER["socket"] == "127.0.0.1:80" {
-	url.redirect  = (".*" => "https://safe.duckduckgo.com\$0" )
-	}
-}
+
 
 \$SERVER["socket"] == "$PRIVATE_IP:80" {
 server.document-root = "$DIRHTML"
@@ -1285,11 +1200,9 @@ if [ ! -f $FILE_HCONF ] ; then
 fi
 chown root:$GROUPHTTPD $FILE_HCONF
 chmod 660 $FILE_HCONF
-if [ -f $FILE_GCTOFFCONF ] ; then 
-	chown root:$GROUPHTTPD $FILE_GCTOFFCONF
-	chmod 660 $FILE_GCTOFFCONF
-fi
-
+listeusers > $FILE_GCTOFFCONF
+chown root:$GROUPHTTPD $FILE_GCTOFFCONF
+chmod 660 $FILE_GCTOFFCONF
 if [ ! -f $FILE_HCOMPT ] ; then
 	echo "date=$(date +%D)" > $FILE_HCOMPT
 fi
@@ -1306,89 +1219,104 @@ if [ ! $test -eq 0 ];then
 	set -e
 	exit 1
 fi
-echo "fin FoncHTTPDCONF"
-}
-configloginpassword () {
-PTNlogin='^[a-zA-Z0-9]*$'
-while (true)
-do
-     
-	loginhttp=$(whiptail --title "Login" --nocancel --inputbox "Entrer le login pour l'interface d'administration 
-- que des lètres ou des chifres .
-- 6 carratères minimum :" 10 60 3>&1 1>&2 2>&3)			
-	if [ $(expr $loginhttp : $PTNlogin) -gt 6  ];then 
-		break
-	fi	
-
-done
-while (true)
-do
-password=$(whiptail --title "Mot de passe" --nocancel --passwordbox "Entrer votre mot de passe pour $loginhttp et valider par Ok pour continuer." 10 60 3>&1 1>&2 2>&3)
-		password2=$(whiptail --title "Mot de passe" --nocancel --passwordbox "Confirmez votre mot de passe pour $loginhttp et valider par Ok pour continuer." 10 60 3>&1 1>&2 2>&3)
-		if [ $password = $password2 ] ; then
-			
-			if [ $(echo $password | grep -E [a-z] | grep -E [0-9] | grep -E [A-Z] | grep -E '[&éè~#{}()ç_@à?.;:/!,$<>=£%]' | wc -c ) -ge 8 ] ; then
-				break
-			else
-				whiptail --title "Mot de passe" --msgbox "Mot de pass n'est pas asser complex, il doit comptenir au moins:
-- 8 carataire aux total,1 Majuscule,1 minuscule,1 nombre
-et 1 caractaire spéciale parmis les suivants &éè~#{}()ç_@à?.;:/!,$<>=£% " 14 60 
-			fi
-		else
-		    whiptail --title "Mot de passe" --msgbox "Le mot de pass rentré n'est pas identique au premier." 14 60 
-				
-		fi
-
-done
-addadminhttpd "$loginhttp" "$password"
+updateprofileuser
 }
 CActparental () {
-echo "CActparental"
+rm -rf $CADIR
+rm -f $PEMSRVDIR/duckduckgo.pem
+rm -f $PEMSRVDIR/search.yahoo.com.pem
 DIR_TMP=${TMPDIR-/tmp}/ctparental-mkcert.$$
 mkdir $DIR_TMP
-mkdir $CADIR 2> /dev/null
+mkdir $CADIR
 
 ## création de la clef priver ca et du certificat ca
-openssl genrsa  1024 > $DIR_TMP/cactparental.key 2> /dev/null
-openssl req -new -x509 -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=CActparental" -days 10000 -key $DIR_TMP/cactparental.key > $DIR_TMP/cactparental.crt 
+openssl genrsa  2048 > $DIR_TMP/cactparental.key
+openssl req -new -x509 -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=CActparental" -days 10000 -key $DIR_TMP/cactparental.key > $DIR_TMP/cactparental.crt
 
-## création de la clef privée serveur localhost
-openssl genrsa 1024 > $DIR_TMP/localhost.key 2> /dev/null
+
+## création de la clef privée serveur lighttpd
+openssl genrsa 1024 > $DIR_TMP/localhost.key
 ## création certificat localhost et signature par la ca
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=localhost" -key $DIR_TMP/localhost.key > $DIR_TMP/localhost.csr 
-openssl x509 -req -in $DIR_TMP/localhost.csr -out $DIR_TMP/localhost.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAcreateserial -CAserial $DIR_TMP/ca.srl  
+openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=localhost" -key $DIR_TMP/localhost.key > $DIR_TMP/localhost.csr
+openssl x509 -req -in $DIR_TMP/localhost.csr -out $DIR_TMP/localhost.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAcreateserial -CAserial $DIR_TMP/ca.srl
 
-## création du certificat duckduckgo pour redirection vers safe.duckduckgo.com
-openssl genrsa 1024 > $DIR_TMP/duckduckgo.key 2> /dev/null
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=duckduckgo.com" -key $DIR_TMP/duckduckgo.key > $DIR_TMP/duckduckgo.csr 
-openssl x509 -req -in $DIR_TMP/duckduckgo.csr -out $DIR_TMP/duckduckgo.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAserial $DIR_TMP/ca.srl 
 
-## création du certificat search.yahoo.com pour redirection vers pages d'interdiction
-openssl genrsa 1024 > $DIR_TMP/search.yahoo.com.key 2> /dev/null
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=search.yahoo.com" -key $DIR_TMP/search.yahoo.com.key > $DIR_TMP/search.yahoo.com.csr 
-openssl x509 -req -in $DIR_TMP/search.yahoo.com.csr -out $DIR_TMP/search.yahoo.com.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAserial $DIR_TMP/ca.srl 
+## création de la clef privée ca intermédière serveur squid
+openssl genrsa 1024 > $DIR_TMP/squidca.key
+## création certificat localhost et signature par la ca
+openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=127.0.0.1" -key $DIR_TMP/squidca.key > $DIR_TMP/squidca.csr
+openssl x509 -req -in $DIR_TMP/squidca.csr -out $DIR_TMP/squidca.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAcreateserial -CAserial $DIR_TMP/ca.srl
+
 
 ## instalation de la CA dans les ca de confiance.
-cp -f $DIR_TMP/cactparental.crt $CADIR/
-cp -f $DIR_TMP/cactparental.crt $DIRHTML
-cp -f $DIR_TMP/cactparental.crt $REPCAMOZ
-## instalation des certificats serveur
-cat $DIR_TMP/localhost.key $DIR_TMP/localhost.crt > $PEMSRVDIR/localhost.pem
-cat $DIR_TMP/duckduckgo.key $DIR_TMP/duckduckgo.crt > $PEMSRVDIR/duckduckgo.pem
-cat $DIR_TMP/search.yahoo.com.key $DIR_TMP/search.yahoo.com.crt > $PEMSRVDIR/search.yahoo.com.pem
-rm -rf $DIR_TMP
 
-updatecauser
-echo "fin CActparental"
+cp $DIR_TMP/cactparental.crt $CADIR/
+cp $DIR_TMP/squidca.crt $CADIR/
+cp $DIR_TMP/cactparental.crt $DIRHTML
+cp $DIR_TMP/squidca.crt $REPCAMOZ
+cp $DIR_TMP/cactparental.crt $REPCAMOZ
+## instalation des certificats serveur squid
+rm -rf $PEMSRVSQUID
+mkdir $PEMSRVSQUID
+cp $DIR_TMP/squidca.key $PEMSRVSQUID/
+cp $DIR_TMP/squidca.crt $PEMSRVSQUID/
+chown -R  root:$PROXYuser $PEMSRVSQUID
+chmod -R 640 $PEMSRVSQUID
+
+
+cat $DIR_TMP/localhost.key $DIR_TMP/localhost.crt > $PEMSRVDIR/localhost.pem
+
+#cat $DIR_TMP/duckduckgo.key $DIR_TMP/duckduckgo.crt > $PEMSRVDIR/duckduckgo.pem
+#cat $DIR_TMP/search.yahoo.com.key $DIR_TMP/search.yahoo.com.crt > $PEMSRVDIR/search.yahoo.com.pem
+rm -rf $DIR_TMP
+$SQUIDstop
+rm -rf $SSLCRTSREP
+$SSLCRTCMD -c -s  $SSLCRTSREP
+chown -R $PROXYuser:$PROXYuser $SSLCRTSREP
+$SQUIDstart
+
+
+}
+
+testsquid3ssl () {
+
+messagesquidinstall="Veillez installer squid3 avec les options ssl :
+   sous debian les paquet officiel sont compiler sans les options.
+   il faudras donc les construirent vous même comme suit,
+   aptitude update
+   aptitude install build-essential fakeroot devscripts gawk gcc-multilib dpatch 
+   aptitude build-dep squid3 
+   aptitude install libcap2-dev
+   aptitude build-dep openssl
+   apt-get source squid3
+   cd squid3-x.x.x (x.x.x a changer en fonction de la vertion de votre distribution.
+   editer le fichier debian/rules et ajouter les 2 paramètre suivant a la fin de
+   DEB_CONFIGURE_EXTRA_FLAGS := ..... \ 
+      .... \ 
+      --enable-ssl \ 
+      --enable-ssl-crtd 
+      debuild -us -uc -b
+"
+
+squid3 -v 2&> /dev/null 
+if [ ! $? -eq 0 ];then # si squid3 n'est pas installer
+clear
+echo -e "$RougeD squid3 n'est pas installé. $Fcolor"
+echo "$messagesquidinstall"
+exit 10
+fi
+if [ ! $(squid3 -v | grep "enable-ssl" | grep -c "enable-ssl-crtd") -ge 1 ];then # si squid3 ne possède pas les options ssl	
+clear
+echo -e "$RougeD la verssion de squid3 installée ne possède pas les options ssl apropriée. $Fcolor"
+echo "$messagesquidinstall"
+exit 10	
+fi
 }
 
 
 install () {
 	groupadd ctoff
-	unset https_proxy
-	unset HTTPS_PROXY
-	unset http_proxy
-	unset HTTP_PROXY
+	testsquid3ssl
 	if [ $nomanuel -eq 0 ]; then 
 		vim -h 2&> /dev/null
 		if [ $? -eq 0 ] ; then
@@ -1419,7 +1347,7 @@ install () {
 		while (true); do
 		$EDIT $DIR_CONF/dist.conf
 		clear
-		cat  $DIR_CONF/dist.conf | grep -v -E ^# | grep -v ^$
+		cat $EDIT $DIR_CONF/dist.conf | grep -v -E ^#
 		echo "Entrer : S pour continuer avec ces parramêtres ."
 		echo "Entrer : Q pour Quiter l'installation."
 		echo "Entrer tous autre choix pour modifier les parramêtres."
@@ -1450,6 +1378,7 @@ install () {
       initblenabled
       cat /etc/resolv.conf > $DIR_CONF/resolv.conf.sav
       if [ $noinstalldep = "0" ]; then
+      ln -s /usr/local/bin/CTsquidssl.sh /usr/local/bin/CTparental.sh 
 	  for PACKAGECT in $CONFLICTS
          do
 			$CMDREMOVE $PACKAGECT 2> /dev/null
@@ -1515,9 +1444,8 @@ install () {
       dnsmasqon
       $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
 	  confdansguardian
-	  confprivoxy
+	  confsquid3ssl
       FoncHTTPDCONF
-      activegourpectoff
       iptablesreload
       $ENCRON
       $ENLIGHTTPD
@@ -1529,73 +1457,84 @@ install () {
 
 
 updatelistgctoff () {
-	result="0"
-	if [ ! -f $FILE_GCTOFFCONF ] ; then 
-		echo -n > $FILE_GCTOFFCONF
-	fi
 	## on ajoute tous les utilisateurs manquants dans la liste
 	for PCUSER in `listeusers`
 	do
 		if [ $(cat $FILE_GCTOFFCONF | sed -e "s/#//g" | grep -c -E "^$PCUSER$") -eq 0 ];then
-			result="1"
-			echo "#$PCUSER" >> $FILE_GCTOFFCONF
+			echo $PCUSER >> $FILE_GCTOFFCONF
 		fi
 	done
 	## on supprime tout ceux qui n'existent plus sur le pc.
 	for PCUSER in $(cat $FILE_GCTOFFCONF | sed -e "s/#//g" )
 	do
 		if [ $( listeusers | grep -c -E "^$PCUSER$") -eq 0 ];then
-			result="1"
 			$SED "/^$PCUSER$/d" $FILE_GCTOFFCONF
 			$SED "/^#$PCUSER$/d" $FILE_GCTOFFCONF
 		fi
 	done
-	echo $result
-	
 }
 applistegctoff () {
-		$ADDUSERTOGROUP root ctoff 2> /dev/null
-		for PCUSER in $(cat $FILE_GCTOFFCONF )
-		do
-			if [ $(echo $PCUSER | grep -c -v "#") -eq 1 ];then
-				$ADDUSERTOGROUP $PCUSER ctoff 2> /dev/null
-			else
-				$DELUSERTOGROUP $(echo $PCUSER | sed -e "s/#//g" ) ctoff 2> /dev/null
-			fi
-		done 
-	
+	updatelistgctoff
+
+	$ADDUSERTOGROUP root ctoff 2> /dev/null
+	for PCUSER in $(cat $FILE_GCTOFFCONF )
+	do
+		if [ $(echo $PCUSER | grep -c -v "#") -eq 1 ];then
+			$ADDUSERTOGROUP $PCUSER ctoff 2> /dev/null
+		else
+			$DELUSERTOGROUP $(echo $PCUSER | sed -e "s/#//g" ) ctoff 2> /dev/null
+		fi
+	done 
 
 }
-
+updateprofileuser (){
+	
+	for user in `listeusers` ; do	
+	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
+	for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
+		#firefox iceweachel
+		# on supprime tous les anciens certificats
+		while true
+		do
+			certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
+			if [ ! $? -eq 0 ];then 
+				break
+			fi
+			certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - squidssl" 2&> /dev/null
+			if [ ! $? -eq 0 ];then 
+				break
+			fi
+		done
+		# on ajoute le nouveau certificat
+		certutil -A -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -i $CADIR/cactparental.crt -n"CActparental - ctparental" -t "CT,c,c"	
+		certutil -A -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -i $CADIR/squidca.crt -n"CActparental - squidssl" -t "CT,c,c"		
+	done
+done
+}
 activegourpectoff () {
-echo "activegourpectoff"
    groupadd ctoff
+   $ADDUSERTOGROUP root ctoff
    $SED "s?^GCTOFF.*?GCTOFF=ON?g" $FILE_CONF
-   updatelistgctoff
    applistegctoff
-   USERHTTPD=$(cat /etc/passwd | grep /var/www | cut -d":" -f1)
-   GROUPHTTPD=$(cat /etc/group | grep $USERHTTPD | cut -d":" -f1)
-   chown root:$GROUPHTTPD $FILE_GCTOFFCONF
-   chmod 660 $FILE_GCTOFFCONF
-   echo "PATH=$PATH"  > /etc/cron.d/CTparentalupdateuser
-   echo "*/1 * * * * root /usr/local/bin/CTparental.sh -ucto" >> /etc/cron.d/CTparentalupdateuser
-   $CRONrestart
-echo "fin activegourpectoff"
+
 }
 
 desactivegourpectoff () {
-   groupdel ctoff 2> /dev/null
+   groupdel ctoff
    $SED "s?^GCTOFF.*?GCTOFF=OFF?g" $FILE_CONF
+
 }
 
 uninstall () {
    desactivegourpectoff
    rm -f /etc/cron.d/CTparental*
+   $DNSMASQrestart
    $LIGHTTPDstop
-   $DNSMASQstop
    rm -f /var/www/index.lighttpd.html
    rm -rf $tempDIR
    rm -rf $DIRHTML
+
+
    rm -rf /usr/local/share/CTparental
    rm -rf /usr/share/lighttpd/*
    rm -f $CTPARENTALCONFHTTPD
@@ -1609,11 +1548,10 @@ uninstall () {
    if [ $noinstalldep = "0" ]; then
 	 for PACKAGECT in $DEPENDANCES
          do
-			
-			$CMDREMOVE $PACKAGECT 2> /dev/null
+	 $CMDREMOVE $PACKAGECT 2> /dev/null
          done
    fi
-   # desactivation du modules ip_conntrack_ftp
+   echo "desactivation du modules ip_conntrack_ftp"
 	test=`grep ip_conntrack_ftp $FILEMODULESLOAD |wc -l`
 	if [ $test -ge "1" ] ; then
 		$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" $FILEMODULESLOAD
@@ -1625,27 +1563,10 @@ uninstall () {
 	###
    rm -rf $DIR_CONF
    rm -f $PEMSRVDIR/localhost.pem
-   rm -f $PEMSRVDIR/duckduckgo.pem
    rm -f $CADIR/cactparental.crt
-   rm -f $REPCAMOZ/cactparental.crt
-   for user in `listeusers` ; do	
-		HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-		if [ -d $HOMEPCUSER ];then
-			#on desinstall le certificat dans tous les prifiles firefoxe utilisateur existant 
-			for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
-				#firefox iceweachel
-				# on supprime tous les anciens certificats
-				while true
-				do
-					certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
-					if [ ! $? -eq 0 ];then 
-						break
-					fi
-				done
-			done
-		fi
-   done
-   unsetproxy
+
+
+   
 }
 
 choiblenabled () {
@@ -1946,10 +1867,9 @@ $CRONrestart
 }
 
 desactivetimelogin () {
-echo "desactivetimelogin"
 for FILE in `echo $GESTIONNAIREDESESSIONS`
 do
-   $SED "/account required pam_time.so/d" $DIRPAM$FILE 2> /dev/null
+   $SED "/account required pam_time.so/d" $DIRPAM$FILE
 done
 cat $FILEPAMTIMECONF.old > $FILEPAMTIMECONF
 for NumDAY in 0 1 2 3 4 5 6
@@ -1957,16 +1877,15 @@ do
    rm -f /etc/cron.d/CTparental${DAYS[$NumDAY]}
 done
 rm -f /etc/cron.d/CTparentalmaxtimelogin
-$SED "s?^HOURSCONNECT.*?HOURSCONNECT=OFF?g" $FILE_CONF 
+$SED "s?^HOURSCONNECT.*?HOURSCONNECT=OFF?g" $FILE_CONF
 for PCUSER in `listeusers`
 do
-	passwd -u $PCUSER > /dev/null
+	passwd -u $PCUSER
 done
 # on remet tous les compteurs à zéro.
 echo "date=$(date +%D)" > $FILE_HCOMPT
 echo > $FILE_HCONF
 $CRONrestart
-echo "fin desactivetimelogin"
 }
 
 
@@ -2080,7 +1999,7 @@ $CRONrestart
 }
 
 
-# and func # ne pas effacer cette ligne !!
+
 
 usage="Usage: CTparental.sh    {-i }|{ -u }|{ -dl }|{ -ubl }|{ -rl }|{ -on }|{ -off }|{ -cble }|{ -dble }
                                |{ -tlo }|{ -tlu }|{ -uhtml }|{ -aupon }|{ -aupoff }|{ -aup } 
@@ -2142,29 +2061,25 @@ case $arg1 in
       exit 0
       ;;
    -u | --uninstall )
-	  autoupdateoff 
+	  iptablesoff
+      autoupdateoff 
       dnsmasqoff
       desactivetimelogin
-      iptablesoff
       uninstall
       exit 0
       ;;
    -dl | --download )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  download
-		  adapt
-		  catChoice
-		  dnsmasqon
-		  $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
-      fi
+      download
+      adapt
+      catChoice
+      dnsmasqon
+      $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
       exit 0
       ;;
    -ubl | --updatebl )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  adapt
-		  catChoice
-		  dnsmasqon
-      fi
+      adapt
+      catChoice
+      dnsmasqon
        
       exit 0
       ;;
@@ -2173,10 +2088,8 @@ case $arg1 in
       exit 0
       ;;
    -rl | --reload )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-         catChoice
-         dnsmasqon
-      fi 
+      catChoice
+      dnsmasqon
       exit 0
       ;;
    -on | --on )
@@ -2192,90 +2105,56 @@ case $arg1 in
       exit 0
       ;;
    -wlo | --whitelistonly )
-	  if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  dnsmasqwhitelistonly
-      fi
+      dnsmasqwhitelistonly
       exit 0
       ;;
    -cble | --confblenable )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  choiblenabled
-		  catChoice
-		  dnsmasqon
-      fi
+      choiblenabled
+      catChoice
+      dnsmasqon
       exit 0
       ;;
     -dble | --defaultblenable )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  initblenabled
-		  catChoice
-		  dnsmasqon
-      fi
-      exit 0
+      initblenabled
+      catChoice
+      dnsmasqon
       ;;
     -tlo | --timeloginon )
       activetimelogin
-      exit 0
       ;;
     -tlu | --timeloginon )
       desactivetimelogin
-      exit 0
       ;;
     -trf | --timeloginon )
       readTimeFILECONF
-      exit 0
       ;;
     -aupon | --autoupdateon )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		 autoupdateon
-      fi
-      exit 0
+      autoupdateon
       ;;
     -aupoff | --autoupdateoff )
       autoupdateoff
-      exit 0
       ;;
     -aup | --autoupdate )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		 autoupdate
-      fi
-      exit 0
+      autoupdate
       ;;
     -listusers )
       listeusers
-      exit 0
       ;;
     -gcton )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  activegourpectoff
-		  iptablesreload
-	  fi
-	  exit 0
+      activegourpectoff
+	  iptablesreload
       ;;
     -gctoff )
 	  desactivegourpectoff
 	  iptablesreload
-	  exit 0
       ;;
     -gctulist )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  updatelistgctoff
-		  iptablesreload
-	  fi
-	  exit 0
+	  updatelistgctoff
+	  iptablesreload
       ;;
     -gctalist )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  test=$(updatelistgctoff)
-		  if [ $test -eq 1 ];then
-			updatecauser
-			setproxy
-		  fi
-		  unset test
-		  applistegctoff
-		  iptablesreload
-	  fi
-	  exit 0
+	  applistegctoff
+	  iptablesreload
       ;;
     -ipton )
       $SED "s?.*IPRULES.*?IPRULES=ON?g" $FILE_CONF
@@ -2283,32 +2162,15 @@ case $arg1 in
       echo -e "$RougeD pour ajouter des règles personalisée éditer le fichier "
       echo " $FILEIPTABLES "
       echo -e " puis relancer la commande CTparental.sh -ipton $Fcolor"
-      exit 0
       ;;
     -iptoff )
       $SED "s?.*IPRULES=.*?IPRULES=OFF?g" $FILE_CONF
       iptablesreload
-      exit 0
       ;;
     -uctl )
 	 # appelé toutes les minutes par cron pour activer désactiver les usagers ayant des restrictions de temps journalier de connexion.
 	  updatetimelogin
-	  exit 0
-      ;;  
-    -ucto )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		 # appelé toutes les minutes par cron pour activer le filtrage sur les usagers nouvelement créé .
-		  test=$(updatelistgctoff)
-		  if [ $test -eq 1 ];then
-			applistegctoff
-			updatecauser
-			setproxy
-			iptablesreload
-		  fi
-		  unset test
-	  fi
-	  exit 0
-      ;;       
+      ;;      
       
    *)
       echo "Argument inconnu :$1";
