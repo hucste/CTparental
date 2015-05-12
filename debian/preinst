@@ -1,13 +1,14 @@
 #!/bin/bash
-#
+
+set -e
 
 ping -c3 www.google.fr > /dev/null
 test=$?
 if [ ! $test -eq 0 ];then
 	echo "Connection internet requise!"
-	set -e
 	exit 1
 fi
+
 
 rm -rf /usr/local/share/CTparental/
 rm -f /usr/local/etc/CTparental-wl
@@ -19,6 +20,8 @@ rm -rf /usr/local/bin/CTadmin/
 service cron restart
 rm -f /usr/local/bin/CTparental.sh
 mkdir -p /usr/local/bin
+
+
 exit 0
 
 

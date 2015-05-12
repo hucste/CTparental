@@ -1,0 +1,44 @@
+
+Template: ctparental/httplogin
+Type: string
+Description: Entrer le login pour l'interface d'administration 
+ -que des lettres et/ou des chifres .
+ -6 carratères minimum .
+
+Template: ctparental/httplogin_erreur
+Type: error
+Description: Erreur de saisie du login
+ Le login est mal formé.
+ Veuillez recommencer.
+
+Template: ctparental/httppassword
+Type: password
+Description: Entrer votre mot de passe pour pour l'interface d'administration
+ il doit comptenir au moins:
+ - 8 carataire aux total
+ - 1 majuscule
+ - 1 minuscule
+ - 1 nombre
+ - 1 caractaire spéciale parmis les suivants &éè~#{}()ç_@à?.;:/!,$<>=£%
+
+Template: ctparental/httppassword2
+Type: password
+Description: Confirmation du mot de passe pour pour l'interface d'administration
+
+Template: ctparental/httppassword_non_ident
+Type: error
+Description: Erreur de saisie du mot de passe
+ Le mot de passe et sa confirmation ne sont pas identiques. Veuillez recommencer.
+
+Template: ctparental/httppassword_trop_simple
+Type: error
+Description: Erreur de saisie du mot de passe
+ Le mot de passe et sa confirmation sont trops simple,
+ ils doivent comptenir au moins:
+ - 8 carataire aux total
+ - 1 Majuscule
+ - 1 minuscule
+ - 1 nombre
+ - 1 caractaire spéciale parmis les suivants &éè~#{}()ç_@à?.;:/!,$<>=£%
+ . Veuillez recommencer.
+

@@ -1,3 +1,5 @@
 #!/bin/bash
-/usr/local/bin/CTparental.sh -u -nodep -nomanuel 2> /dev/null
+set -e
+chmod 755 /usr/local/bin/CTparental.sh
+/usr/local/bin/CTparental.sh -u -nodep -nomanuel 
 exit 0
