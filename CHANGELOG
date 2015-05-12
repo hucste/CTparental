@@ -1,5 +1,5 @@
 # 11/05/2015
-# Version 3.94      correction du bug d'attente infini lors de l'install avec la logitec ubuntu + amélioration des cri-taire de sécurité du couple login mots de pass de l'interface.
+# Version 3.94      correction du bug d'attente infini lors de l'install avec la logitec ubuntu par l'utilisation de debconf + amélioration des cri-taire de sécurité du couple login mots de pass de l'interface.
 					activation du group privilégier par défault + ajout automatique des nouvaux utilisateurs en temps que utilisateur non filtrée.
 					correction de bug divers.
 # Version 3.93-2    correction du bug de paramétrage proxy a la desactivation total du controle parental.
