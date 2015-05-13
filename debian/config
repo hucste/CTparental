@@ -6,7 +6,8 @@ set -e
 
 #DEBCONF_DEBUG="developer"
 
-if [ "$1" = "configure" ] && ([ -z "$2" ] )  ; then
+# on ne demande le login/mot de pass que durant l'installation ou une reconfiguration de ctparental
+if [ "$1" = "configure" ] && ([ -z "$2" ] ) || [ "$1" = "reconfigure" ]; then
 
 while (true)
 do
