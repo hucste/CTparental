@@ -1591,13 +1591,23 @@ desactivegourpectoff () {
 
 uninstall () {
    desactivegourpectoff
-   rm -f /etc/cron.d/CTparental*
    $LIGHTTPDstop
    $DNSMASQstop
-   rm -f /var/www/index.lighttpd.html
+   if [ $nomanuel -eq 1 ]; then 
+       rm -f /etc/cron.d/CTparental*
+       # rm -rf $DIRadminHTML
+       rm -rf $DIRHTML
+       rm -rf /usr/local/share/CTparental
+       rm -f $(ls $DIR_CONF | grep -v dist.conf)
+   else 
+       rm -f /etc/cron.d/CTparental*
+       rm -rf $DIRadminHTML
+       rm -rf $DIRHTML
+       rm -rf /usr/local/share/CTparental
+       rm -rf $DIR_CONF
+   fi
+   
    rm -rf $tempDIR
-   rm -rf $DIRHTML
-   rm -rf /usr/local/share/CTparental
    rm -rf /usr/share/lighttpd/*
    rm -f $CTPARENTALCONFHTTPD
    if [ -f /etc/NetworkManager/NetworkManager.conf ];then
@@ -1607,7 +1617,6 @@ uninstall () {
    fi
 
    if [ $noinstalldep = "0" ]; then
-     rm -rf $DIRadminHTML
 	 for PACKAGECT in $DEPENDANCES
          do
 			
@@ -1624,7 +1633,7 @@ uninstall () {
 	modprobe -r ip_conntrack_ftp	
 	$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" $FILEMODULESLOAD
 	###
-   rm -rf $DIR_CONF
+
    rm -f $PEMSRVDIR/localhost.pem
    rm -f $PEMSRVDIR/duckduckgo.pem
    rm -f $CADIR/cactparental.crt
