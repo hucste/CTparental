@@ -416,8 +416,9 @@ done
 }
 
 addadminhttpd() {
-echo -n > $PASSWORDFILEHTTPD   
-
+if [ ! -f $PASSWORDFILEHTTPD ] ; then
+    echo -n > $PASSWORDFILEHTTPD   
+fi
 
 chown root:$USERHTTPD $PASSWORDFILEHTTPD
 chmod 640 $PASSWORDFILEHTTPD
@@ -425,7 +426,8 @@ USERADMINHTTPD=${1}
 pass=${2}
 hash=$(echo -n "$USERADMINHTTPD:$REALMADMINHTTPD:$pass" | md5sum | cut -b -32)
 ligne=$(echo "$USERADMINHTTPD:$REALMADMINHTTPD:$hash")
-
+echo $ligne
+$SED "/^$USERADMINHTTPD:$REALMADMINHTTPD.*/d" $PASSWORDFILEHTTPD
 echo $ligne >> $PASSWORDFILEHTTPD
 }
 
