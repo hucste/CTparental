@@ -7,7 +7,7 @@ Homepage: https://github.com/pini-gh/CTparental.git
 Vcs-Browser: https://github.com/pini-gh/CTparental.git
 Vcs-Git: https://github.com/pini-gh/CTparental.git
 Build-Depends: debhelper (>=7.0.50~)
-Standards-Version:3.9.4
+Standards-Version:3.94-0
 
 Package: ctparental
 Architecture: all
