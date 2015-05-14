@@ -14,12 +14,12 @@ RET=""
 db_get ctparental/httppassword
 export debconfpassword=$RET
 RET=""
+db_purge
 
 chmod 755 /usr/local/bin/CTparental.sh
 /usr/local/bin/CTparental.sh -i -nodep -nomanuel  
 #db_unregister ctparental/httplogin 
 #db_unregister ctparental/httppassword
 #db_unregister ctparental/httppassword2
-db_purge
 
 exit 0
