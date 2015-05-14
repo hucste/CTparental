@@ -427,7 +427,7 @@ pass=${2}
 hash=$(echo -n "$USERADMINHTTPD:$REALMADMINHTTPD:$pass" | md5sum | cut -b -32)
 ligne=$(echo "$USERADMINHTTPD:$REALMADMINHTTPD:$hash")
 echo $ligne
-$SED "/^.*:$REALMADMINHTTPD.*/d" $PASSWORDFILEHTTPD
+$SED "/.*:$REALMADMINHTTPD.*/d" $PASSWORDFILEHTTPD 
 echo $ligne >> $PASSWORDFILEHTTPD
 }
 
@@ -1600,7 +1600,6 @@ uninstall () {
    rm -rf /usr/local/share/CTparental
    rm -rf /usr/share/lighttpd/*
    rm -f $CTPARENTALCONFHTTPD
-   rm -rf $DIRadminHTML
    if [ -f /etc/NetworkManager/NetworkManager.conf ];then
 	$SED "s/^#dns=dnsmasq/dns=dnsmasq/g" /etc/NetworkManager/NetworkManager.conf
 	$NWMANAGERrestart
@@ -1608,6 +1607,7 @@ uninstall () {
    fi
 
    if [ $noinstalldep = "0" ]; then
+     rm -rf $DIRadminHTML
 	 for PACKAGECT in $DEPENDANCES
          do
 			
