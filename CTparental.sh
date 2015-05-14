@@ -1594,8 +1594,8 @@ uninstall () {
    $LIGHTTPDstop
    $DNSMASQstop
    if [ $nomanuel -eq 1 ]; then 
+	   # en install par le deb on n'efface pas les fichiers installer par celuis si
        rm -f /etc/cron.d/CTparental*
-       # rm -rf $DIRadminHTML
        rm -rf $DIRHTML
        rm -rf /usr/local/share/CTparental
        rm -f $(ls $DIR_CONF | grep -v dist.conf)
