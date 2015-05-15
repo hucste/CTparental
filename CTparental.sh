@@ -1594,12 +1594,12 @@ uninstall () {
    # On force la désinstall par dpkg ou rpm si l'install a était effectuer par un paquage.
    if [ $nomanuel -eq 0 ]; then 
 	   muninstall= "Une install par paquet a était détecter veuiller utiliser cette commande pour désinstaller ctparental."
-	   if $(dpkg -l ctparental | grep -c ^i) -eq 1 ;then
-			echo $muninstall
+	   if [ $(dpkg -l ctparental | grep -c ^i) -eq 1 ] ;then
+			echo "$muninstall"
 			echo "$CMDREMOVE ctparental"
 			exit 0
 	   fi
-	   if $(rpm -q -a | grep ctparental ) -eq 1 ;then
+	   if [ $(rpm -q -a | grep ctparental ) -eq 1 ] ;then
 			echo $muninstall
 			echo "$CMDREMOVE ctparental"
 			exit 0
