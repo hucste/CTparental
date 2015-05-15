@@ -1617,8 +1617,11 @@ uninstall () {
        rm -f /etc/cron.d/CTparental*
        rm -rf $DIRHTML
        rm -rf /usr/local/share/CTparental
-       echo "rm -f $(ls $DIR_CONF | grep -v dist.conf)"
-       rm -f $(ls $DIR_CONF | grep -v dist.conf)
+       for file in $(ls $DIR_CONF | grep -v dist.conf)
+       do
+		  rm -rf $DIR_CONF/$(ls $DIR_CONF | grep -v dist.conf)
+       done
+       
    else 
        rm -f /etc/cron.d/CTparental*
        rm -rf $DIRadminHTML
