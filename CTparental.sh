@@ -173,7 +173,7 @@ PRIVOXYCTA=${PRIVOXYCTA:="/etc/privoxy/ctparental.action"}
 CTFILEPROXY=${CTFILEPROXY:="$DIR_CONF/CT-proxy.sh"}
 XSESSIONFILE=${XSESSIONFILE:="/etc/X11/Xsession"}
 REPCAMOZ=${REPCAMOZ:="/usr/share/ca-certificates/mozilla/"}
-XTERMINAL=${XTERMINAL:="x-terminal-emulator --hide-menubar  --hide-toolbar -e "}
+
 if [ $(yum help 2> /dev/null | wc -l ) -ge 50 ] ; then
    ## "Distribution basée sur yum exemple redhat, fedora..."
    CMDINSTALL=${CMDINSTALL:="yum install "}
@@ -197,9 +197,6 @@ if [ $( echo $CMDINSTALL | wc -m ) -eq 1 ] ; then
    set -e
    exit 1
 fi
-ISINTALLMANUEL=${ISINTALLMANUEL:=1}
-
-
 
 interface_WAN=$(ip route | awk '/^default via/{print $5}' | sort -u ) 
 ipbox=$(ip route | awk '/^default via/{print $3}' | sort -u )   # suppose que la passerelle est la route par défaut
