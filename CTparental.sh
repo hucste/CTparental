@@ -1593,7 +1593,7 @@ desactivegourpectoff () {
 uninstall () {
    # On force la désinstall par dpkg ou rpm si l'install a était effectuer par un paquage.
    if [ $nomanuel -eq 0 ]; then 
-	   muninstall= "Une install par paquet a était détecter veuiller utiliser cette commande pour désinstaller ctparental."
+	   muninstall="Une install par paquet a était détecter veuiller utiliser cette commande pour désinstaller ctparental."
 	   if [ $(dpkg -l ctparental | grep -c ^i) -eq 1 ] ;then
 			echo "$muninstall"
 			echo "$CMDREMOVE ctparental"
