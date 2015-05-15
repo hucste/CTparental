@@ -197,7 +197,7 @@ if [ $( echo $CMDINSTALL | wc -m ) -eq 1 ] ; then
    set -e
    exit 1
 fi
-
+ISINTALLMANUEL=${ISINTALLMANUEL:=1}
 
 
 
@@ -1385,6 +1385,7 @@ echo "fin CActparental"
 
 
 install () {
+	iptablesoff
 	groupadd ctoff
 	unset https_proxy
 	unset HTTPS_PROXY
@@ -1590,6 +1591,24 @@ desactivegourpectoff () {
 }
 
 uninstall () {
+   # On force la désinstall par dpkg ou rpm si l'install a était effectuer par un paquage.
+   if [ $nomanuel -eq 0 ]; then 
+	   muninstall= "Une install par paquet a était détecter veuiller utiliser cette commande pour désinstaller ctparental."
+	   if $(dpkg -l ctparental | grep -c ^i) -eq 1 ;then
+			echo $muninstall
+			echo "$CMDREMOVE ctparental"
+			exit 0
+	   fi
+	   if $(rpm -q -a | grep ctparental ) -eq 1 ;then
+			echo $muninstall
+			echo "$CMDREMOVE ctparental"
+			exit 0
+	   fi
+   fi
+   autoupdateoff 
+   dnsmasqoff
+   desactivetimelogin
+   iptablesoff
    desactivegourpectoff
    $LIGHTTPDstop
    $DNSMASQstop
@@ -2146,20 +2165,15 @@ case $arg1 in
       echo "$usage"
       exit 0
       ;;
-   -i | --install )
-      iptablesoff
+   -i )
       install
       exit 0
       ;;
-   -u | --uninstall )
-	  autoupdateoff 
-      dnsmasqoff
-      desactivetimelogin
-      iptablesoff
-      uninstall
+   -u )
+	  uninstall
       exit 0
       ;;
-   -dl | --download )
+   -dl )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
 		  download
 		  adapt
@@ -2169,7 +2183,7 @@ case $arg1 in
       fi
       exit 0
       ;;
-   -ubl | --updatebl )
+   -ubl )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
 		  adapt
 		  catChoice
@@ -2178,36 +2192,36 @@ case $arg1 in
        
       exit 0
       ;;
-   -uhtml | --updatehtml )
+   -uhtml )
       FoncHTTPDCONF
       exit 0
       ;;
-   -rl | --reload )
+   -rl )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
          catChoice
          dnsmasqon
       fi 
       exit 0
       ;;
-   -on | --on )
+   -on )
       dnsmasqon
       iptablesreload
       exit 0
       ;;
-   -off | --off )
+   -off )
 	  desactivegourpectoff
       autoupdateoff 
       dnsmasqoff
       iptablesoff
       exit 0
       ;;
-   -wlo | --whitelistonly )
+   -wlo )
 	  if [ ! $FILTRAGEISOFF -eq 1 ];then
 		  dnsmasqwhitelistonly
       fi
       exit 0
       ;;
-   -cble | --confblenable )
+   -cble )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
 		  choiblenabled
 		  catChoice
@@ -2215,7 +2229,7 @@ case $arg1 in
       fi
       exit 0
       ;;
-    -dble | --defaultblenable )
+    -dble )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
 		  initblenabled
 		  catChoice
@@ -2223,29 +2237,29 @@ case $arg1 in
       fi
       exit 0
       ;;
-    -tlo | --timeloginon )
+    -tlo )
       activetimelogin
       exit 0
       ;;
-    -tlu | --timeloginon )
+    -tlu )
       desactivetimelogin
       exit 0
       ;;
-    -trf | --timeloginon )
+    -trf )
       readTimeFILECONF
       exit 0
       ;;
-    -aupon | --autoupdateon )
+    -aupon )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
 		 autoupdateon
       fi
       exit 0
       ;;
-    -aupoff | --autoupdateoff )
+    -aupoff )
       autoupdateoff
       exit 0
       ;;
-    -aup | --autoupdate )
+    -aup )
       if [ ! $FILTRAGEISOFF -eq 1 ];then
 		 autoupdate
       fi
