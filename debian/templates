@@ -42,3 +42,7 @@ Description: Erreur de saisie du mot de passe
  - 1 caractaire spéciale parmis les suivants &éè~#{}()ç_@à?.;:/!,$<>=£%
  . Veuillez recommencer.
 
+Template: ctparental/erreurinternet
+Type: error
+Description: Connection internet requise!
+

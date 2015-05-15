@@ -1,11 +1,16 @@
 #!/bin/bash
+# Source debconf library.
+. /usr/share/debconf/confmodule
 
-set -e
-service dnsmasq stop #
+# Show interface
+db_go || true
+
 ping -c3 www.google.fr > /dev/null
 test=$?
 if [ ! $test -eq 0 ];then
-	echo "Connection internet requise!"
+	db_input critical ctparental/erreurinternet
+	db_go
+	#echo "Connection internet requise!"
 	exit 1
 fi
 
