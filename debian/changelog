@@ -1,6 +1,7 @@
 ctparental (3.94-1) unstable; urgency=medium
 
-  * Upstream fix .
+  * CTparental.sh -u propose la des-installation par dpkg --purge ctparental en cas de présence de l'install deb.
+  * correctif du bug de non suppression de /usr/local/CTparental/ lors d'une dés-installation par dpkg.
  
  -- Guillaume Marsat <guillaume.marsat@laposte.net>  Thu, 09 Jan 2014 21:09:00 +0100
  
