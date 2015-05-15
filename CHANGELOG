@@ -1,4 +1,12 @@
-# 11/05/2015
+# 15/05/2015
+# Version 3.94-1   CTparental.sh -u propose la des-installation par dpkg --purge ctparental en cas de présence de l'install deb.
+					correctif du bug de non suppression de /usr/local/CTparental/ lors d'une dés-installation par dpkg.
+# Version 3.94-0  utilisation de debconf pour l'install par le deb et de whiptail en install manuel ,
+                    pour la demande de login mot de pass de l'interface d'administration.
+                    cela évite les problême avec software-center qui n'afficher pas la demande de mots de pass et qui tourner en boucle infini.
+                  activation par default du group privilégier. par default tout le monde est filtré sauf root.
+                  les utilisateurs créé par la suite sont filtré automatiquement .
+                  pour ce faire une tache planifier ce lance toute les minutes et modifi les iptables si un nouvel utilisateur a était créé.					
 # Version 3.94      correction du bug d'attente infini lors de l'install avec la logitec ubuntu par l'utilisation de debconf + amélioration des cri-taire de sécurité du couple login mots de pass de l'interface.
 					activation du group privilégier par défault + ajout automatique des nouvaux utilisateurs en temps que utilisateur non filtrée.
 					correction de bug divers.
