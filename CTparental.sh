@@ -115,7 +115,7 @@ PROXYuser=${PROXYuser:="privoxy"}
 #### DEPENDANCES par DEFAULT #####
 DEPENDANCES=${DEPENDANCES:=" e2guardian dnsmasq lighttpd php5-cgi libnotify-bin notification-daemon iptables-persistent rsyslog privoxy openssl libnss3-tools whiptail "}
 #### PACKETS EN CONFLI par DEFAULT #####
-CONFLICTS=${CONFLICTS:=" mini-httpd apache2 firewalld "}
+CONFLICTS=${CONFLICTS:=" dansguardian mini-httpd apache2 firewalld "}
 
 #### COMMANDES de services par DEFAULT #####
 CMDSERVICE=${CMDSERVICE:="service "}
