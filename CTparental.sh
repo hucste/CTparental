@@ -328,7 +328,8 @@ EOF
 $DANSGOUARDIANrestart
  cp -f /usr/local/share/CTparental/e2guardian_conf/template.html /usr/share/e2guardian/languages/ukenglish/
  cp -f /usr/local/share/CTparental/e2guardian_conf/template-fr.html /usr/share/e2guardian/languages/french/template.html
- sed -i "s/\&ecute;/\&eacute;/g" /usr/share/e2guardian/languages/french/messages
+ sed -i "s/é/\&eacute;/g" /usr/share/e2guardian/languages/french/messages
+ sed -i "s/è/\&egrave;/g" /usr/share/e2guardian/languages/french/messages
  $DANSGOUARDIANrestart
 echo "fin confe2guardian" 
 }
