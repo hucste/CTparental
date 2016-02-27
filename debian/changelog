@@ -1,3 +1,9 @@
+ctparental (4.00-2) unstable; urgency=medium
+  
+  *  patch page d'interseption e2guardian .
+    
+ -- Guillaume Marsat <guillaume.marsat@laposte.net>  Sat, 27 Feb 2016 16:46:44 +0100
+ 
 ctparental (4.00-1) unstable; urgency=medium
   
   *  migration dansguardian vers e2guardian .
