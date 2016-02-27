@@ -3,4 +3,4 @@ CTparental-bl-infos.sh 	usr/local/bin
 debian/dist.conf		usr/local/etc/CTparental
 www/CTadmin				var/www
 www/CTparental       	usr/local/share/CTparental/www
-confDansgouardian		usr/local/share/CTparental
+e2guardian_conf			usr/local/share/CTparental
