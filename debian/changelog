@@ -1,3 +1,9 @@
+ctparental (4.00-1) unstable; urgency=medium
+  
+  *  migration dansguardian vers e2guardian .
+    
+ -- Guillaume Marsat <guillaume.marsat@laposte.net>  Sat, 27 Feb 2016 13:44:30 +0100
+ 
 ctparental (3.95-3) unstable; urgency=medium
   
   *  ajout des depots apt dans les domaines en exeption de manière transparente.
