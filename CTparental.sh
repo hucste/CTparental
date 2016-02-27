@@ -132,7 +132,7 @@ NWMANAGERstop=${NWMANAGERstop:="$CMDSERVICE network-manager stop"}
 NWMANAGERstart=${NWMANAGERstart:="$CMDSERVICE network-manager start"}
 NWMANAGERrestart=${NWMANAGERrestart:="$CMDSERVICE network-manager restart"}
 IPTABLESsave=${IPTABLESsave:="$CMDSERVICE iptables-persistent save"}
-DANSGOUARDIANrestart=${DANSGOUARDIANrestart:="$CMDSERVICE dansguardian restart"}
+DANSGOUARDIANrestart=${DANSGOUARDIANrestart:="$CMDSERVICE e2guardian restart"}
 PRIVOXYrestart=${PRIVOXYrestart:="$CMDSERVICE privoxy restart"}
 #### LOCALISATION du fichier PID lighttpd par default ####
 LIGHTTPpidfile=${LIGHTTPpidfile:="/var/run/lighttpd.pid"}
@@ -258,7 +258,7 @@ DIR_DNS_BLACKLIST_ENABLED="$DIR_CONF/blacklist-enabled"
 DIR_DNS_WHITELIST_ENABLED="$DIR_CONF/whitelist-enabled"
 DNS_FILTER_OSSI="$DIR_CONF/blacklist-local"
 DREAB="$DIR_CONF/domaine-rehabiliter" 
-E2GUXSITELIST="/etc/dansguardian/lists/exceptionsitelist"
+E2GUXSITELIST="/etc/e2guardian/lists/exceptionsitelist"
 THISDAYS=$(expr $(date +%Y) \* 365 + $(date +%j))
 MAXDAYSFORUPDATE="7" # update tous les 7 jours
 CHEMINCTPARENTLE=$(readlink -f $0)
