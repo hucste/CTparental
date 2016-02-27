@@ -258,7 +258,7 @@ DIR_DNS_BLACKLIST_ENABLED="$DIR_CONF/blacklist-enabled"
 DIR_DNS_WHITELIST_ENABLED="$DIR_CONF/whitelist-enabled"
 DNS_FILTER_OSSI="$DIR_CONF/blacklist-local"
 DREAB="$DIR_CONF/domaine-rehabiliter" 
-DANSXSITELIST="/etc/dansguardian/lists/exceptionsitelist"
+E2GUXSITELIST="/etc/dansguardian/lists/exceptionsitelist"
 THISDAYS=$(expr $(date +%Y) \* 365 + $(date +%j))
 MAXDAYSFORUPDATE="7" # update tous les 7 jours
 CHEMINCTPARENTLE=$(readlink -f $0)
@@ -620,11 +620,11 @@ do
 		done
     fi
 done
-echo "localhost" > $DANSXSITELIST
-echo "127.0.0.1" >> $DANSXSITELIST
-echo $BL_SERVER >> $DANSXSITELIST
-echo $DOMAINEDEPOTS | sed -e "s/ /\n/g" >> $DANSXSITELIST
-cat $DREAB | sed -e"s/^\.//g" | sed -e"s/^www.//g" >> $DANSXSITELIST
+echo "localhost" > $E2GUXSITELIST
+echo "127.0.0.1" >> $E2GUXSITELIST
+echo $BL_SERVER >> $E2GUXSITELIST
+echo $DOMAINEDEPOTS | sed -e "s/ /\n/g" >> $E2GUXSITELIST
+cat $DREAB | sed -e"s/^\.//g" | sed -e"s/^www.//g" >> $E2GUXSITELIST
 echo -n "."
 cat $DREAB | sed -e "s? ??g" | sed -e "s?.*?server=/&/#?g" >  $DIR_DNS_WHITELIST_ENABLED/whiteliste.ossi.conf
 echo
