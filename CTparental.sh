@@ -110,7 +110,7 @@ DAYS=( $DAYS )
 DAYSPAM=( Mo Tu We Th Fr Sa Su )
 DAYSCRON=( mon tue wed thu fri sat sun )
 PROXYport=${PROXYport:="8888"}
-DANSGport=${DANSGport:="8080"}
+E2GUport=${E2GUport:="8080"}
 PROXYuser=${PROXYuser:="privoxy"}
 #### DEPENDANCES par DEFAULT #####
 DEPENDANCES=${DEPENDANCES:=" dnsmasq lighttpd php5-cgi libnotify-bin notification-daemon iptables-persistent rsyslog privoxy openssl libnss3-tools whiptail "}
@@ -152,8 +152,8 @@ ENIPTABLESSAVE=${ENIPTABLESSAVE:=""}
 UIDMINUSER=${UIDMINUSER:=1000}
 
 FILESYSCTL=${FILESYSCTL:="/etc/sysctl.conf"}
-FILEConfDans=${FILEConfDans:="/etc/dansguardian/dansguardian.conf"}
-FILEConfDansf1=${FILEConfDansf1:="/etc/dansguardian/dansguardianf1.conf"}
+FILEConfe2gu=${FILEConfe2gu:="/etc/e2guardian/e2guardian.conf"}
+FILEConfe2guf1=${FILEConfe2guf1:="/etc/e2guardian/e2guardianf1.conf"}
 DNSMASQCONF=${DNSMASQCONF:="/etc/dnsmasq.conf"}
 MAINCONFHTTPD=${MAINCONFHTTPD:="/etc/lighttpd/lighttpd.conf"}
 DIRCONFENABLEDHTTPD=${DIRCONFENABLEDHTTPD:="/etc/lighttpd/conf-enabled"}
@@ -291,22 +291,44 @@ confe2guardian () {
   # replace the default deny HTML page
  
   echo "confe2guardian"
-  $SED "s?^loglevel =.*?loglevel = 0?g" $FILEConfDans   
-  $SED "s?^languagedir =.*?languagedir = '/etc/dansguardian/languages'?g" $FILEConfDans  
-  $SED "s?^language =.*?language = 'french'?g" $FILEConfDans  
-  $SED "s?^logexceptionhits =.*?logexceptionhits = 0?g" $FILEConfDans 
-  $SED "s?^filterip =.*?filterip = 127.0.0.1?g" $FILEConfDans
-  $SED "s?^proxyip =.*?proxyip = 127.0.0.1?g" $FILEConfDans  
-  $SED "s?^filterport =.*?filterport = $DANSGport?g" $FILEConfDans 
-  $SED "s?^proxyport =.*?proxyport = $PROXYport?g" $FILEConfDans 
-  $SED "s?^proxyport =.*?proxyport = $PROXYport?g" $FILEConfDans 
-  $SED "s?.*UNCONFIGURED.*?#UNCONFIGURED?g" $FILEConfDans
-  echo "#le filtrage de domaines est géré par dnsmasq, ne pas toucher ce fichier!!" > /etc/dansguardian/lists/bannedsitelist
+  $SED "s?^loglevel =.*?loglevel = 0?g" $FILEConfe2gu   
+  $SED "s?^languagedir =.*?languagedir = '/usr/share/e2guardian/languages'?g" $FILEConfe2gu  
+  $SED "s?^language =.*?language = 'french'?g" $FILEConfe2gu  
+  $SED "s?^logexceptionhits =.*?logexceptionhits = 0?g" $FILEConfe2gu 
+  $SED "s?^filterip =.*?filterip = 127.0.0.1?g" $FILEConfe2gu
+  $SED "s?^proxyip =.*?proxyip = 127.0.0.1?g" $FILEConfe2gu  
+  $SED "s?^filterports =.*?filterports = $E2GUport?g" $FILEConfe2gu 
+  $SED "s?^proxyport =.*?proxyport = $PROXYport?g" $FILEConfe2gu 
+  #$SED "s?.*UNCONFIGURED.*?#UNCONFIGURED?g" $FILEConfe2gu
+cat << EOF > /etc/e2guardian/lists/bannedsitelist
+#Blanket Block.  To block all sites except those in the
+#exceptionsitelist and greysitelist files, remove
+#the # from the next line to leave only a '**':
+#**
+
+#Blanket SSL/CONNECT Block.  To block all SSL
+#and CONNECT tunnels except to addresses in the
+#exceptionsitelist and greysitelist files, remove
+#the # from the next line to leave only a '**s':
+#**s
+
+#Blanket IP Block.  To block all sites specified only as an IP,
+#remove the # from the next line to leave only a '*ip':
+#*ip
+
+#Blanket SSL/CONNECT IP Block.  To block all SSL and CONNECT
+#tunnels to sites specified only as an IP,
+#remove the # from the next line to leave only a '**ips':
+#**ips
+
+#le filtrage de domaines est géré par dnsmasq, ne pas toucher ce fichier!!"
+
+EOF
 
 $DANSGOUARDIANrestart
- cp -f /usr/local/share/CTparental/confDansgouardian/template.html /etc/dansguardian/languages/ukenglish/
- cp -f /usr/local/share/CTparental/confDansgouardian/template-fr.html /etc/dansguardian/languages/french/template.html
- sed -i "s/\&ecute;/\&eacute;/g" /etc/dansguardian/languages/french/messages
+ cp -f /usr/local/share/CTparental/e2guardian_conf/template.html /usr/share/e2guardian/languages/ukenglish/
+ cp -f /usr/local/share/CTparental/e2guardian_conf/template-fr.html /usr/share/e2guardian/languages/french/template.html
+ sed -i "s/\&ecute;/\&eacute;/g" /usr/share/e2guardian/languages/french/messages
  $DANSGOUARDIANrestart
 echo "fin confe2guardian" 
 }
@@ -391,10 +413,10 @@ test=$(grep "^### CTparental ###" $XSESSIONFILE |wc -l)
 		if [ $test -eq "0" ] ; then	 
 		 $SED  2"i\### CTparental ###" $XSESSIONFILE
 		 $SED  3'i\if  [ \$(groups \$(whoami) | grep -c -E "( ctoff\$)|( ctoff )") -eq 0 ];then' $XSESSIONFILE
-		 $SED  4"i\  export https_proxy=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  6"i\  export http_proxy=http://127.0.0.1:$DANSGport" $XSESSIONFILE
-		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$DANSGport" $XSESSIONFILE
+		 $SED  4"i\  export https_proxy=http://127.0.0.1:$E2GUport" $XSESSIONFILE
+		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$E2GUport" $XSESSIONFILE
+		 $SED  6"i\  export http_proxy=http://127.0.0.1:$E2GUport" $XSESSIONFILE
+		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$E2GUport" $XSESSIONFILE
 		 $SED  8"i\fi" $XSESSIONFILE
 		fi
 unset test
