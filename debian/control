@@ -7,11 +7,11 @@ Homepage: https://github.com/marsat/CTparental.git
 Vcs-Browser: https://github.com/marsat/CTparental.git
 Vcs-Git: https://github.com/marsat/CTparental.git
 Build-Depends: debhelper (>=7.0.50~)
-Standards-Version:3.95-3
+Standards-Version:4.00-1
 
 Package: ctparental
 Architecture: all
-Depends: debconf,dnsmasq,lighttpd,perl,sudo,wget,php5-cgi,libnotify-bin,notification-daemon,iptables-persistent,rsyslog,dansguardian,privoxy,openssl,libnss3-tools
+Depends: debconf,dnsmasq,lighttpd,perl,sudo,wget,php5-cgi,libnotify-bin,notification-daemon,iptables-persistent,rsyslog,privoxy,openssl,libnss3-tools
 Description: Controle parental.
  Filtrage web basé sur dnsmasq, lighttpd et cron,
  une gestion des horaires de connection est aussi intégrée et

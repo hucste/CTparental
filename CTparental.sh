@@ -113,7 +113,7 @@ PROXYport=${PROXYport:="8888"}
 DANSGport=${DANSGport:="8080"}
 PROXYuser=${PROXYuser:="privoxy"}
 #### DEPENDANCES par DEFAULT #####
-DEPENDANCES=${DEPENDANCES:=" dnsmasq lighttpd php5-cgi libnotify-bin notification-daemon iptables-persistent rsyslog dansguardian privoxy openssl libnss3-tools whiptail "}
+DEPENDANCES=${DEPENDANCES:=" dnsmasq lighttpd php5-cgi libnotify-bin notification-daemon iptables-persistent rsyslog privoxy openssl libnss3-tools whiptail "}
 #### PACKETS EN CONFLI par DEFAULT #####
 CONFLICTS=${CONFLICTS:=" mini-httpd apache2 firewalld "}
 
@@ -287,10 +287,10 @@ EOF
          
 
 }
-confdansguardian () {
+confe2guardian () {
   # replace the default deny HTML page
  
-  echo "confdansguardian"
+  echo "confe2guardian"
   $SED "s?^loglevel =.*?loglevel = 0?g" $FILEConfDans   
   $SED "s?^languagedir =.*?languagedir = '/etc/dansguardian/languages'?g" $FILEConfDans  
   $SED "s?^language =.*?language = 'french'?g" $FILEConfDans  
@@ -308,7 +308,7 @@ $DANSGOUARDIANrestart
  cp -f /usr/local/share/CTparental/confDansgouardian/template-fr.html /etc/dansguardian/languages/french/template.html
  sed -i "s/\&ecute;/\&eacute;/g" /etc/dansguardian/languages/french/messages
  $DANSGOUARDIANrestart
-echo "fin confdansguardian" 
+echo "fin confe2guardian" 
 }
 confprivoxy () {
 echo "confprivoxy"
@@ -1452,7 +1452,7 @@ install () {
       catChoice
       dnsmasqon
       $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
-	  confdansguardian
+	  confe2guardian
 	  confprivoxy
       FoncHTTPDCONF
       activegourpectoff
