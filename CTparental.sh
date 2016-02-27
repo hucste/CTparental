@@ -452,7 +452,7 @@ USERADMINHTTPD=${1}
 pass=${2}
 hash=$(echo -n "$USERADMINHTTPD:$REALMADMINHTTPD:$pass" | md5sum | cut -b -32)
 ligne=$(echo "$USERADMINHTTPD:$REALMADMINHTTPD:$hash")
-echo $ligne
+#echo $ligne
 $SED "/.*:$REALMADMINHTTPD.*/d" $PASSWORDFILEHTTPD 
 echo $ligne >> $PASSWORDFILEHTTPD
 }
