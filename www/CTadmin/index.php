@@ -15,137 +15,27 @@ function form_filter ($form_content)
 		if ($list[strlen($list)-1] != "\n") { $list[strlen($list)]="\n";} ;} ;
 	return $list;
 }
-# Choice of language
-$Language = 'en';
-if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
-  $Langue = explode(",",$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-  $Language = strtolower(substr(chop($Langue[0]),0,2)); }
-if($Language == 'fr'){
- $l_selectuser="l'utilisateur selectionné est : ";
- $l_userisnotselect="Veuillez selectionner un utilisateur.";
- $l_isadmin = "7j/7 24h/24";
- $l_valide = "Enregistrer";
- $to = " à " ;
- $and = " et " ;
- $l_select = "Sélectionner";
- $l_info1 = "08h00 à 24h00 ou 08h00 à 12h00 et 14h00 à 24h00";
- $week = array( "lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche");
-  $tmaxinfo= "Minutes max /24 heurs";
-  $l_switch_LogOFF="Déconnexion";
-  $l_hours_error1="un mauvais format horaire a été trouvé :exemple 8h30 doit s'écrire 08h30";
-  $l_hours_error2="incohérence horaire : ";
-  $l_hours_error3="Vous devez rentrer une valeur entre 1 et 1440 minutes.";
-  $l_hours_on = "Les horaires de connexion sont actuellement activés";
-  $l_hours_off = "Les horaires de connexion sont actuellement désactivés";
-  $l_switch_hours_off = "Désactiver les horaires de connexion";
-  $l_switch_hours_on = "Activer les horaires de connexion";
-  $l_hours1 = "Heures de connexions autorisées";
-  $l_switch_Init_bl = "Init Catégories";
-  $l_auto_update_on = "La mise à jour de la blacklist de Toulouse tous les 7 jours est activée";
-  $l_auto_update_off = "La mise à jour de la blacklist de Toulouse tous les 7 jours est désactivée";
-  $l_switch_auto_update_on = "Activer Maj Auto";
-  $l_switch_auto_update_off = "Désactiver Maj Auto";
-  $l_fmenu_black = "Filtrage par BlackList";
-  $l_fmenu_white = "Filtrage par WhiteList";
-  $l_title1 = "Filtrage de noms de domaine ";
-  $l_error_open_file="Erreur d'ouverture du fichier";
-  $l_dnsfilter_on="Le filtrage de noms de domaine est actuellement activé";
-  $l_dnsfilter_off="Le filtrage de noms de domaine est actuellement désactivé";
-  $l_switch_filtering_on="Activer le filtrage";
-  $l_switch_filtering_off="Désactiver le filtrage";
-  $l_main_bl="Liste noire/blanche";
-  $l_bl_version="Version actuelle :";
-  $l_bl_categories_bl="Choix des catégories à filtrer";
-  $l_bl_categories_wl="Choix des catégories à autoriser";
-  $l_download_bl="Télécharger la dernière version";
-  $l_fingerprint="L'empreinte numérique du fichier téléchargé est : ";
-  $l_fingerprint2="Vérifiez-là en suivant ce lien (ligne 'blacklists.tar.gz') : ";
-  $l_activate_bl="Activer la nouvelle version";
-  $l_reject_bl="Rejeter";
-  $l_warning="Temps estimé : une minute.";
-  $l_specific_filtering="Filtrage spécial";
-  $l_forbidden_dns="Noms de domaine filtrés";
-  $l_forbidden_dns_explain="Entrez un nom de domaine par ligne (exemple : domaine.org)";
-  $l_one_dns="Entrez un nom de domaine par ligne (exemple : domaine.org)";
-  $l_rehabilitated_dns="Noms de domaine réhabilités";
-  $l_rehabilitated_dns_explain_bl="1-Entrez ici des noms de domaine bloqués par la liste noire <BR> que vous souhaitez réhabiliter.";
-  $l_rehabilitated_dns_explain_wl="2-Entrez ici des noms de domaine autorisés en plus de ceux <BR> de la liste blanche de Toulouse.";
-  $l_add_to_bl="Noms de domaine ajoutés à la liste noire";
-  $l_record="Enregistrer les modifications";
-  $l_wait="Une fois validées, 30 secondes sont nécessaires pour traiter vos modifications";
-  $l_title_gctoff="Groupe privilégié";
-  $l_gctoff_explain="Cocher des utilisateurs ne devant pas subir de filtrage";
-  $l_gctoff_username="Nom d'utilisateur";
-  $l_gctoff_username_comment="Commentaires";
-  $l_switch_gctoff_on="Activer le groupe de privilégiés.";
-  $l_switch_gctoff_off="Désactiver le groupe de privilégiés.";
-  $l_gctoff_on = "Le Groupe privilégié est actuellement activés";
-  $l_gctoff_off = "Le Groupe privilégié est actuellement désactivés";
+# on 
+$LANG=getenv('LANG'); 
+if(isset($LANG)) {
+$tab=explode(".",getenv('LANG'));
+$domain=substr($tab[0],0,2);
 
+// set the locale into the instance of gettext 
+setlocale(LC_ALL,$LANG); // change by language, directory name fr_FR, not fr_FR.UTF-8 
+
+// Spécifie la localisation des tables de traduction
+// ce qui donne pour une variable $LANG='fr_FR.UTF-8' une répertoir ci dessous.
+// ./locale/fr_FR/LC_MESSAGES/
+bindtextdomain($domain, "./locale");
+
+// Choisit le domaine
+// ce qui nous donne un nom de fichier pour $LANG='fr_FR.UTF-8' de fr.mo
+textdomain($domain);
+// La traduction est cherché dans ./locale/fr_FR/LC_MESSAGES/fr.mo
 }
-else {
-  $l_userisnotselect="Veuillez sélectionner un utilisateur.";
-  $l_selectuser="l'utilisateur sélectionné est : ";
-  $l_isadmin = "7j/7 24h/24";
-  $l_valide = "Enregistrer";
-  $l_select = "Select";
-  $to = " to " ;
-  $and = " and " ;
-  $l_info1 = "08h00 à 24h00 ou 08h00 à 12h00 et 14h00 à 24h00";
-  $week = array( "lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche");
-  $tmaxinfo= "Minutes max /24 heurs";
-  $l_switch_LogOFF="Logout";
-  $l_hours_error1="Un mauvais format horaire a été trouvé : exemple 8h30 doit s'écrire 08h30";
-  $l_hours_error2="incohérence horaire : ";
-  $l_hours_error3="Vous devez rentrer une valeur entre 1 et 1440 minutes.";
-  $l_hours_on = "Les horaires de connexion sont actuellement activés";
-  $l_hours_off = "Les horaires de connexion sont actuellement désactivés";
-  $l_switch_hours_off = "Désactiver les horaires de connexion";
-  $l_switch_hours_on = "Activer les horaires de connexion";
-  $l_hours1 = "Heures de connexions autorisées";
-  $l_switch_Init_bl = "Init Catégories";
-  $l_auto_update_on = "La mise à jour de la blacklist de Toulouse tous les 7 jours est activée";
-  $l_auto_update_off = "La mise à jour de la blacklist de Toulouse tous les 7 jours est désactivée";
-  $l_switch_auto_update_on = "Activer Maj Auto";
-  $l_switch_auto_update_off = "Désactiver Maj Auto";
-  $l_fmenu_black = "Filtrage par BlackList";
-  $l_fmenu_white = "Filtrage par WhiteList";
-  $l_title1 = "Domain names filtering";
-  $l_error_open_file="Error opening the file";
-  $l_dnsfilter_on="Actually, the Domain name filter is on";
-  $l_dnsfilter_off="Actually, the Domain name filter is off";
-  $l_switch_filtering_on="Switch the Filter on";
-  $l_switch_filtering_off="Switch the Filter off";
-  $l_main_bl="Blacklist/Whitelist";
-  $l_bl_version="Current version : ";
-  $l_bl_categories_bl="Choice of filtered categories";
-  $l_bl_categories_wl="Choice of authorized categories";
-  $l_download_bl="Download the last version";
-  $l_fingerprint="The digital fingerprint of the downloaded blacklist is : ";
-  $l_fingerprint2="Verify it with this link (line 'blacklists.tar.gz') : ";
-  $l_activate_bl="Activate the new version";
-  $l_reject_bl="Reject";
-  $l_warning="Estimated time : one minute.";
-  $l_specific_filtering="Specific filtering";
-  $l_forbidden_dns="Filtered domain names";
-  $l_forbidden_dns_explain="Enter one domain name per row (exemple : domain.org)";
-  $l_one_dns="Enter one domain name per row (example : domain.org)";
-  $l_rehabilitated_dns="Rehabilitated domain names";
-  $l_rehabilitated_dns_explain_bl="Enter here domain names that are blocked by the blacklist <BR> and you want to rehabilitate.";
-  $l_rehabilitated_dns_explain_wl="2-Entrez ici des noms de domaine autorisés en plus de ceux <BR> de la liste blanche de Toulouse.";
-  $l_add_to_bl="Domain names to add to blacklist";
-  $l_record="Save changes";
-  $l_wait="Once validated, 30 seconds is necessary to compute your modifications";
-  $l_title_gctoff="Groupe privilégié";
-  $l_gctoff_explain="Cocher des utilisateurs ne devant pas subir de filtrage";
-  $l_gctoff_username="Username";
-  $l_gctoff_username_comment="Comments";
-  $l_switch_gctoff_on="Activer le groupe de privilégiés.";
-  $l_switch_gctoff_off="Désactiver le groupe de privilégiés.";
-  $l_gctoff_on = "Le Groupe privilégié est actuellement activés";
-  $l_gctoff_off = "Le Groupe privilégié est actuellement désactivés";
 
- }
+$week = array( gettext("monday"),gettext("tuesday"),gettext("wednesday"),gettext("thursday"),gettext("friday"),gettext("saturday"),gettext("sunday"));
 $weeknum = array( 0,1,2,3,4,5,6);
 $bl_categories="/usr/local/etc/CTparental/bl-categories-available";
 $bl_categories_enabled="/usr/local/etc/CTparental/categories-enabled";
@@ -210,7 +100,7 @@ case 'MAJ_cat' :
 			}
 		fclose($pointeur);
 		}
-	else {echo "$l_error_open_file $bl_categories_enabled";}
+	else {echo gettext('Error opening the file')." ".$bl_categories_enabled;}
 	$fichier=fopen($bl_domains,"w+");
 	fputs($fichier, form_filter($_POST['OSSI_bl_domains']));
 	fclose($fichier);
@@ -238,7 +128,7 @@ case 'MAJ_H' :
 	
 		}
 	}
-	else {echo "$l_error_open_file $hconf_file";}
+	else {echo gettext('Error opening the file')." $hconf_file";}
 	if (isset($_POST["isadmin"])){fwrite($pointeur,"$selectuser=admin="."\n"); } 
 	else 
 	{
@@ -246,7 +136,7 @@ case 'MAJ_H' :
 			if ( preg_match( "/^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1[0-3][0-9][0-9]$|^14[0-3][0-9]$|^1440$/", $_POST["tmax"] ) == 1  )
 			{fwrite($pointeur,"$selectuser=user=".$_POST["tmax"]."\n");}
 			else {fwrite($pointeur,"$selectuser=user=1440"."\n"); 
-				  echo "<H3>$l_hours_error3</H3>";}
+				  echo "<H3>".gettext('You must enter a value between 1 and 1440 minutes.')."</H3>";}
 		}
 		else {fwrite($pointeur,"$selectuser=user=1440"."\n"); }
 		foreach ($weeknum as $numday)
@@ -274,13 +164,13 @@ case 'MAJ_H' :
 					else
 					{
 						fwrite($pointeur,"$selectuser=$numday=00h00:23h59"."\n");
-						echo "<H3>$week[$numday] : $l_hours_error2 $h1[$numday]>=$h2[$numday]</H3>";
+						echo "<H3>$week[$numday] : ".gettext('time inconsistency: ')." $h1[$numday]>=$h2[$numday]</H3>";
 					}
 				}
 				else 
 				{
 					fwrite($pointeur,"$selectuser=$numday=00h00:23h59"."\n");
-					echo "<H3>$week[$numday] : $l_hours_error1</H3>";
+					echo "<H3>$week[$numday] : ".gettext('A bad time format has been found: 8h30 instance must be written 08h30')."</H3>";
 				}
 			}
 			else 
@@ -304,13 +194,13 @@ case 'MAJ_H' :
 					else
 					{
 						fwrite($pointeur,"$selectuser=$numday=00h00:23h59"."\n");
-						echo "<H3>$week[$numday] : $l_hours_error2 $h1[$numday]>=$h2[$numday]>=$h3[$numday]>=$h4[$numday]</H3>";
+						echo "<H3>$week[$numday] : ".gettext('time inconsistency: ')." $h1[$numday]>=$h2[$numday]>=$h3[$numday]>=$h4[$numday]</H3>";
 					}
 				}
 				else 
 				{
 					fwrite($pointeur,"$selectuser=$numday=00h00:23h59"."\n");
-					echo "<H3>$week[$numday] : $l_hours_error1</H3>";
+					echo "<H3>$week[$numday] : ".gettext('A bad time format has been found: 8h30 instance must be written 08h30')."</H3>";
 					
 				}
 			}
@@ -357,7 +247,7 @@ $tab=file($conf_ctoff_file);
 }
 
 echo "<TABLE width='100%' border=0 cellspacing=0 cellpadding=0>";
-echo "<tr><th>$l_title1</th></tr>";
+echo "<tr><th>".gettext('Domain names filtering')."</th></tr>";
 echo "<tr bgcolor='#FFCC66'><td><img src='/images/pix.gif' width=1 height=2></td></tr>";
 echo "</TABLE>";
 echo "<TABLE width='100%' border=1 cellspacing=0 cellpadding=0>";
@@ -365,7 +255,7 @@ echo "<tr><td valign='middle' align='left'>";
 echo "<CENTER>";
 echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
 echo "<input type=hidden name='choix' value=\"LogOFF\">";
-echo "<input type=submit value=\"$l_switch_LogOFF\">";
+echo "<input type=submit value=".gettext('Logout').">";
 echo "</FORM>";
 echo "</CENTER>";
 if (is_file ($conf_file))
@@ -384,7 +274,7 @@ if (is_file ($conf_file))
 			}
 		}
 	}
-else { echo "$l_error_open_file $conf_file";}
+else { echo gettext('Error opening the file')." ".$conf_file;}
 
 include 'dns.php';
 
