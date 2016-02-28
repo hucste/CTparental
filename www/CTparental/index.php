@@ -17,6 +17,7 @@ bindtextdomain($domain, "./locale");
 // ce qui nous donne un nom de fichier pour $LANG='fr_FR.UTF-8' de fr.mo
 textdomain($domain);
 // La traduction est cherché dans ./locale/fr_FR/LC_MESSAGES/fr.mo
+}
 ?>
 <html>
 
@@ -31,7 +32,7 @@ textdomain($domain);
 <tr>
 	<td colspan=2 bgcolor=#FEA700 height=100 align=center>
 	<font face=arial,helvetica size=6>
-	<b><?php echo (gettext("Access has been Denied!");?></b>
+	<b><?php echo gettext("Access has been Denied!");?></b>
 	</td>
 </tr>
 <tr>
@@ -48,14 +49,14 @@ textdomain($domain);
 	<td width=550 bgcolor=#FFFFFF align=center valign=center>
 	<font face=arial,helvetica color=black>
 	<font size=4>
-	<?php echo (gettext("Access to the page:"));?>
+	<?php echo gettext("Access to the page:");?>
 	<br><br>
 	<?php
 		echo ( $_SERVER["HTTP_HOST"] );
 	?>
 	<br><br>
 	<font size=3>
-	<?php echo (gettext("... has been denied for the following reason:"));?>
+	<?php echo gettext("... has been denied for the following reason:");?>
 	<br><br>
 	<font color=red>
 	<b>
@@ -73,13 +74,13 @@ foreach ($tab1 as $categorie )
 </b>
 	<font color=black>
 	<br><br><br><br>
-	<?php echo (gettext("You are seeing this error because what you attempted to access appears to contain,"))
-	echo("<br>		".gettext("or is labeled as containing, material that has been deemed inapproriate."));?>
+	<?php echo gettext("You are seeing this error because what you attempted to access appears to contain,");
+	echo "<br>		".gettext("or is labeled as containing, material that has been deemed inapproriate.");?>
 	<br><br>
-	<?php echo (gettext("If you have any queries contact your ICT Co-ordinator or Network Manager."));?>
+	<?php echo gettext("If you have any queries contact your ICT Co-ordinator or Network Manager.");?>
 	<br><br><br><br>
 	<font size=1>
-	<?php echo (gettext("Filtered by "));?> <B><a href="http://www.thekelleys.org.uk/dnsmasq/doc.html" target="_blank">Dnsmasq</a></B></a>
+	<?php echo gettext("Filtered by ");?> <B><a href="http://www.thekelleys.org.uk/dnsmasq/doc.html" target="_blank">Dnsmasq</a></B></a>
 	</td>
 </tr>
 </table>
