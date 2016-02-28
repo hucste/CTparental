@@ -1,26 +1,22 @@
 <?php
-$Language = 'en';
-if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
-  $Langue = explode(",",$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-  $Language = strtolower(substr(chop($Langue[0]),0,2)); }
-if($Language == 'fr'){
-$text0="ACC&Egrave;S REFUS&Eacute;"	;
-$text1="L'acc&egrave;s &agrave; au domaine :";
-$text2="... a &eacute;t&eacute; refus&eacute; pour la(les) raison(s) suivante(s) :";
-$text3="Vous tentez d'acc&eacute;der &agrave; une ressource dont le contenu est r&eacute;put&eacute;
-	contenir des informations inappropri&eacute;es.";
-$text4="Contactez votre responsable informatique (RSSI/OSSI), si vous pensez que ce filtrage est abusif.";
-$text5="Filtr&eacute; par ";
-}
-else {
-$text0="Access has been Denied!";	
-$text1="Access to the page:";
-$text2="... has been denied for the following reason:";
-$text3="You are seeing this error because what you attempted to access appears to contain,
-	or is labeled as containing, material that has been deemed inapproriate.";
-$text4="If you have any queries contact your ICT Co-ordinator or Network Manager.";
-$text5="Filtered by ";	
-}
+# on détecte la langue system
+$LANG=getenv('LANG'); 
+if(isset($LANG)) {
+$tab=explode(".",getenv('LANG'));
+$domain=substr($tab[0],0,2);
+
+// set the locale into the instance of gettext 
+setlocale(LC_ALL,$LANG); // change by language, directory name fr_FR, not fr_FR.UTF-8 
+
+// Spécifie la localisation des tables de traduction
+// ce qui donne pour une variable $LANG='fr_FR.UTF-8' une répertoir ci dessous.
+// ./locale/fr_FR/LC_MESSAGES/
+bindtextdomain($domain, "./locale");
+
+// Choisit le domaine
+// ce qui nous donne un nom de fichier pour $LANG='fr_FR.UTF-8' de fr.mo
+textdomain($domain);
+// La traduction est cherché dans ./locale/fr_FR/LC_MESSAGES/fr.mo
 ?>
 <html>
 
@@ -35,7 +31,7 @@ $text5="Filtered by ";
 <tr>
 	<td colspan=2 bgcolor=#FEA700 height=100 align=center>
 	<font face=arial,helvetica size=6>
-	<b><?php echo ($text0);?></b>
+	<b><?php echo (gettext("Access has been Denied!");?></b>
 	</td>
 </tr>
 <tr>
@@ -52,14 +48,14 @@ $text5="Filtered by ";
 	<td width=550 bgcolor=#FFFFFF align=center valign=center>
 	<font face=arial,helvetica color=black>
 	<font size=4>
-	<?php echo ($text1);?>
+	<?php echo (gettext("Access to the page:"));?>
 	<br><br>
 	<?php
 		echo ( $_SERVER["HTTP_HOST"] );
 	?>
 	<br><br>
 	<font size=3>
-	<?php echo ($text2);?>
+	<?php echo (gettext("... has been denied for the following reason:"));?>
 	<br><br>
 	<font color=red>
 	<b>
@@ -77,12 +73,13 @@ foreach ($tab1 as $categorie )
 </b>
 	<font color=black>
 	<br><br><br><br>
-	<?php echo ($text3);?>
+	<?php echo (gettext("You are seeing this error because what you attempted to access appears to contain,"))
+	echo("<br>		".gettext("or is labeled as containing, material that has been deemed inapproriate."));?>
 	<br><br>
-	<?php echo ($text4);?>
+	<?php echo (gettext("If you have any queries contact your ICT Co-ordinator or Network Manager."));?>
 	<br><br><br><br>
 	<font size=1>
-	<?php echo ($text5);?> <B>Dnsmasq</B></a>
+	<?php echo (gettext("Filtered by "));?> <B><a href="http://www.thekelleys.org.uk/dnsmasq/doc.html" target="_blank">Dnsmasq</a></B></a>
 	</td>
 </tr>
 </table>

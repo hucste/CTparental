@@ -1,6 +1,8 @@
-CTparental.sh			usr/local/bin
-CTparental-bl-infos.sh 	usr/local/bin
-debian/dist.conf		usr/local/etc/CTparental
-www/CTadmin				var/www
-www/CTparental       	usr/local/share/CTparental/www
-e2guardian_conf			usr/local/share/CTparental
+CTparental.sh									usr/local/bin
+CTparental-bl-infos.sh 							usr/local/bin
+debian/dist.conf								usr/local/etc/CTparental
+www/CTadmin										var/www
+www/locale/fr_FR/LC_MESSAGES/fr.mo				var/www/CTadmin/locale/fr_FR/LC_MESSAGES
+www/CTparental       							usr/local/share/CTparental/www
+www/locale/fr_FR/LC_MESSAGES/fr.mo				usr/local/share/CTparental/www/CTparental/locale/fr_FR/LC_MESSAGES
+e2guardian_conf									usr/local/share/CTparental

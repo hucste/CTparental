@@ -357,4 +357,25 @@ msgid "Web sites for e-mail consultation"
 msgstr "Site WEB permettant de consultation son courrier électronique"
 
 msgid "Sites related to cracked softwares"
-msgstr "Sites relatifs aux logiciels piratés (crackés), aux générateurs de clés, etc.\""
+msgstr "Sites relatifs aux logiciels piratés (crackés), aux générateurs de clés, etc."
+
+msgid "Access has been Denied!"
+msgstr "ACCÈS REFUSÉ"
+
+msgid "Access to the page:"
+msgstr "L'accès à au domaine :"
+
+msgid "... has been denied for the following reason:"
+msgstr "... a été refusé pour la(les) raison(s) suivante(s) :"
+
+msgid "You are seeing this error because what you attempted to access appears to contain,"
+msgstr "Vous tentez d'accéder à une ressource dont le contenu est réputé"
+
+msgid "or is labeled as containing, material that has been deemed inapproriate."
+msgstr "contenir des informations inappropriées."
+
+msgid "If you have any queries contact your ICT Co-ordinator or Network Manager."
+msgstr "Contactez votre responsable informatique (RSSI/OSSI), si vous pensez que ce filtrage est abusif."
+
+msgid "Filtered by "
+msgstr "Filtré par "

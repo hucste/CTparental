@@ -1,3 +1,9 @@
+ctparental (4.01-0) unstable; urgency=medium
+  
+  *  internationalisation de l'interfaceweb .
+    
+ -- Guillaume Marsat <guillaume.marsat@laposte.net>  Sun, 28 Feb 2016 18:14:49 +0100
+ 
 ctparental (4.00-3) unstable; urgency=medium
   
   *  corection bug iptables qui ne focer pas le passage par e2guardian .

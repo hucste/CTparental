@@ -230,6 +230,23 @@ msgid "Web sites for e-mail consultation"
 msgstr ""
 msgid "Sites related to cracked softwares"
 msgstr ""
+msgid "Access has been Denied!"	
+msgstr ""
+msgid "Access to the page:"
+msgstr ""
+msgid "... has been denied for the following reason:"
+msgstr ""
+msgid "You are seeing this error because what you attempted to access appears to contain,"
+msgstr ""
+msgid "or is labeled as containing, material that has been deemed inapproriate."
+msgstr ""
+msgid "If you have any queries contact your ICT Co-ordinator or Network Manager."
+msgstr ""
+msgid "Filtered by "	
+msgstr ""
+
+
+
 
 
 
