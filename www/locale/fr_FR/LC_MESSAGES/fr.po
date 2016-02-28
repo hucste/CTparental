@@ -1,0 +1,210 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ctparental\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr\n"
+
+# Copyright: © 2013-2016 Guillaume Marsat <guillaume.marsat@laposte.net>
+# License: GPL-3+
+msgid "the selected user is: "
+msgstr "l'utilisateur sélectionné est : "
+
+msgid "Please select a user."
+msgstr "Veuillez sélectionner un utilisateur."
+
+msgid "24/7"
+msgstr "7j/7 24h/24"
+
+msgid "Record"
+msgstr "Enregistrer"
+
+msgid "Select"
+msgstr "Sélectionner"
+
+msgid " to "
+msgstr " à "
+
+msgid " and "
+msgstr " et "
+
+msgid "08h00 at 24h00 or 08h00 at 12h00 and 14h00 at 24h00"
+msgstr "08h00 à 24h00 ou 08h00 à 12h00 et 14h00 à 24h00"
+
+msgid "monday"
+msgstr "lundi"
+
+msgid "tuesday"
+msgstr "mardi"
+
+msgid "wednesday"
+msgstr "mercredi"
+
+msgid "thursday"
+msgstr "jeudi"
+
+msgid "friday"
+msgstr "vendredi"
+
+msgid "saturday"
+msgstr "samedi"
+
+msgid "sunday"
+msgstr "dimanche"
+
+msgid "Minutes max / 24 hours"
+msgstr "Minutes max /24 heurs"
+
+msgid "Logout"
+msgstr "Déconnexion"
+
+msgid "A bad time format has been found: 8h30 instance must be written 08h30"
+msgstr "un mauvais format horaire a été trouvé :exemple 8h30 doit s'écrire 08h30"
+
+msgid "time inconsistency: "
+msgstr "incohérence horaire : "
+
+msgid "You must enter a value between 1 and 1440 minutes."
+msgstr "Vous devez rentrer une valeur entre 1 et 1440 minutes."
+
+msgid "Connection schedules are currently enabled"
+msgstr "Les horaires de connexion sont actuellement activés"
+
+msgid "Connection schedules are currently disabled"
+msgstr "Les horaires de connexion sont actuellement désactivés"
+
+msgid "Disable logon hours"
+msgstr "Désactiver les horaires de connexion"
+
+msgid "Enable logon hours"
+msgstr "Activer les horaires de connexion"
+
+msgid "Hours of allowed connections"
+msgstr "Heures de connexions autorisées"
+
+msgid "Init Categories"
+msgstr "Init Catégories"
+
+msgid "The update of the blacklist Toulouse every 7 days is activated"
+msgstr "La mise à jour de la blacklist de Toulouse tous les 7 jours est activée"
+
+msgid "The update of the blacklist Toulouse every 7 days is disabled"
+msgstr "La mise à jour de la blacklist de Toulouse tous les 7 jours est désactivée"
+
+msgid "Enable Auto Shift"
+msgstr "Activer Maj Auto"
+
+msgid "Disable Auto Shift"
+msgstr "Désactiver Maj Auto"
+
+msgid "Blacklist filtering"
+msgstr "Filtrage par BlackList"
+
+msgid "WhiteList Filtering"
+msgstr "Filtrage par WhiteList"
+
+msgid "Domain names filtering"
+msgstr "Filtrage de noms de domaine "
+
+msgid "Error opening the file"
+msgstr "Erreur d'ouverture du fichier"
+
+msgid "Actually, the Domain name filter is on"
+msgstr "Le filtrage de noms de domaine est actuellement activé"
+
+msgid "Actually, the Domain name filter is off"
+msgstr "Le filtrage de noms de domaine est actuellement désactivé"
+
+msgid "Switch the Filter on"
+msgstr "Activer le filtrage"
+
+msgid "Switch the Filter off"
+msgstr "Désactiver le filtrage"
+
+msgid "Blacklist/Whitelist"
+msgstr "Liste noire/blanche"
+
+msgid "Current version : "
+msgstr "Version actuelle :"
+
+msgid "Choice of filtered categories"
+msgstr "Choix des catégories à filtrer"
+
+msgid "Choice of authorized categories"
+msgstr "Choix des catégories à autoriser"
+
+msgid "Download the last version"
+msgstr "Télécharger la dernière version"
+
+msgid "The digital fingerprint of the downloaded blacklist is : "
+msgstr "L'empreinte numérique du fichier téléchargé est : "
+
+msgid "Verify it with this link (line 'blacklists.tar.gz') : "
+msgstr "Vérifiez-là en suivant ce lien (ligne 'blacklists.tar.gz') : "
+
+msgid "Activate the new version"
+msgstr "Activer la nouvelle version"
+
+msgid "Reject"
+msgstr "Rejeter"
+
+msgid "Estimated time : one minute."
+msgstr "Temps estimé : une minute."
+
+msgid "Specific filtering"
+msgstr "Filtrage spécial"
+
+msgid "Filtered domain names"
+msgstr "Noms de domaine filtrés"
+
+msgid "Enter one domain name per row (example : .domain.org)"
+msgstr "Entrez un nom de domaine par ligne (exemple : domaine.org)"
+
+msgid "Rehabilitated domain names"
+msgstr "Noms de domaine réhabilités"
+
+msgid "1-Enter here domain names that are blocked by the blacklist and you want to rehabilitate."
+msgstr "1-Entrez ici des noms de domaine bloqués par la liste noire que vous souhaitez réhabiliter."
+
+msgid "2-Enter the domain names permitted in addition to the white list of Toulouse."
+msgstr "2-Entrez ici des noms de domaine autorisés en plus de ceux de la liste blanche de Toulouse."
+
+msgid "Domain names to add to blacklist"
+msgstr "Noms de domaine ajoutés à la liste noire"
+
+msgid "Save changes"
+msgstr "Enregistrer les modifications"
+
+msgid "Once validated, 30 seconds is necessary to compute your modifications"
+msgstr "Une fois validées, 30 secondes sont nécessaires pour traiter vos modifications"
+
+msgid "privileged group"
+msgstr "Groupe privilégié"
+
+msgid "Select users who should not undergo screening"
+msgstr "Cocher des utilisateurs ne devant pas subir de filtrage"
+
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+msgid "Comments"
+msgstr "Commentaires"
+
+msgid "Enable privileged group."
+msgstr "Activer le groupe de privilégiés."
+
+msgid "Disable privileged group."
+msgstr "Désactiver le groupe de privilégiés."
+
+msgid "The preferred Group is currently enabled"
+msgstr "Le Groupe privilégié est actuellement activés"
+
+msgid "The preferred Group is currently disabled"
+msgstr "Le Groupe privilégié est actuellement désactivés"
