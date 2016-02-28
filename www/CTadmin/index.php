@@ -15,7 +15,7 @@ function form_filter ($form_content)
 		if ($list[strlen($list)-1] != "\n") { $list[strlen($list)]="\n";} ;} ;
 	return $list;
 }
-# on 
+# on détecte la langue system
 $LANG=getenv('LANG'); 
 if(isset($LANG)) {
 $tab=explode(".",getenv('LANG'));

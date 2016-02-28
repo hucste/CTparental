@@ -208,3 +208,153 @@ msgstr "Le Groupe privilégié est actuellement activés"
 
 msgid "The preferred Group is currently disabled"
 msgstr "Le Groupe privilégié est actuellement désactivés"
+
+msgid "Blacklist categories"
+msgstr "Catégories de la liste noire"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "This category isn't describe"
+msgstr "Cette catégorie n'est pas décrite"
+
+msgid "Number of filtered domain names :"
+msgstr "Nombre de noms de domaine filtrés :"
+
+msgid "Number of filtered URL :"
+msgstr "Nombre d'URL filtrés :"
+
+msgid "Sites related to eroticism and pornography"
+msgstr "Sites relatifs à l'érotisme et à la pornographie"
+
+msgid "Sites extremist, racist, anti-Semitic or hate"
+msgstr "Sites extrémistes, racistes, antisémites ou incitant à la haine"
+
+msgid "Online gambling sites allowed by the french authority 'ARJEL' (Autorité de Régulation des Jeux En Ligne)"
+msgstr "Sites de pari en ligne certifies par l'ARJEL (Autorité de Régulation des Jeux En Ligne)"
+
+msgid "Sites related to astrology"
+msgstr "Sites relatifs à l'astrologie"
+
+msgid "Sites for downloading audio and video"
+msgstr "Sites de téléchargement de fichiers audio et vidéo"
+
+msgid "Online bank sites"
+msgstr "Sites de banques en ligne"
+
+msgid "Sites hosting blogs"
+msgstr "Sites d'hébergement de blogs"
+
+msgid "Sites « people », stars, etc."
+msgstr "Sites « people », stars, etc."
+
+msgid "Online chat sites"
+msgstr "Sites de dialogue en ligne"
+
+msgid "Sites for children"
+msgstr "Sites pour enfants"
+
+msgid "Sites related to software update or antiviral"
+msgstr "Sites relatifs à la mise à jour logicielle ou antivirale"
+
+msgid "Sites related to the creation of dangerous goods (explosives, poison, etc.)"
+msgstr "Sites relatifs à la création de produits dangereux (explosif, poison, etc.)"
+
+msgid "Online dating sites"
+msgstr "Sites de rencontres en ligne"
+
+msgid "Sites related to narcotic"
+msgstr "Sites relatifs aux produits stupéfiants"
+
+msgid "Warehouses of files (video, images, sound, software, etc.)"
+msgstr "Entrepôts de fichiers  (vidéo, images, son, logiciels, etc.)"
+
+msgid "Sites of financial information"
+msgstr "Sites d'informations financières, bourses, etc."
+
+msgid "Sites hosting discussion forums"
+msgstr "Sites d'hébergement de forums de discussion"
+
+msgid "Online gambling sites (casino, virtual scratching, etc.)"
+msgstr "Sites de jeux d'argent en ligne (casino, grattage virtuel, etc.)"
+
+msgid "Online games sites"
+msgstr "Sites de jeux en ligne"
+
+msgid "Sites related to hacking"
+msgstr "Sites relatifs au piratage informatique"
+
+msgid "Job search sites"
+msgstr "Sites de recherche d'emplois"
+
+msgid "List of educational sites for library"
+msgstr "Liste de sites éducatifs pour bibliothèque"
+
+msgid "Malware sites (viruses, worms, trojans, etc.)."
+msgstr "Site relatifs au logiciels malveillants (virus, vers, trojans, etc.)"
+
+msgid "Manga site"
+msgstr "Site de Mangas"
+
+msgid "doubtful commercial sites"
+msgstr "Sites marchands douteux (X, organes, enfants, etc.)"
+
+msgid "Adult sites (shock, gore, war, etc.)."
+msgstr "Sites pour adultes (image-choc, gore, guerre, etc.)"
+
+msgid "Sites related to GSM mobile (ringtones, logos, etc.)"
+msgstr "Sites relatifs aux mobiles GSM (sonneries, logos, etc.)"
+
+msgid "Domain names and URLs you add to the blacklist (see below)"
+msgstr "Noms de domaine et URLs que vous ajoutez à la liste noire (voir ci-dessous)"
+
+msgid "Phishing sites (traps banking, redirect, etc..)"
+msgstr "Sites relatifs à l'hammeçonnage (pièges bancaires, redirection, etc.)"
+
+msgid "News sites"
+msgstr "Sites de presse"
+
+msgid "Advertising sites"
+msgstr "Sites ou bannières publicitaires"
+
+msgid "Online radio podcast sites"
+msgstr "Sites de radios en ligne ou de podcast"
+
+msgid "Sites that have changed ownership (and therefore content)"
+msgstr "Sites connus ayant changé de propriétaire (et donc de contenu)"
+
+msgid "redirects, anonymization or bypass sites"
+msgstr "Sites de redirection, d'anonymisation ou de contournement"
+
+msgid "Sites for making remote control"
+msgstr "Sites permettant la prise de controle a distance"
+
+msgid "Sectarian sites"
+msgstr "Sites sectaires"
+
+msgid "Social networks sites"
+msgstr "Sites de réseaux sociaux"
+
+msgid "Sites related to sex education"
+msgstr "Sites relatifs à l'éducation sexuelle"
+
+msgid "Shopping sites and online shopping"
+msgstr "Sites de vente et d'achat en ligne"
+
+msgid "Sport sites"
+msgstr "Sites de sport"
+
+msgid "Intentionally malformed URL"
+msgstr "URL intentionnellement mal formées"
+
+msgid "Malformed URL in a 'google' query"
+msgstr "URL mal formées dans une requête « google »"
+
+msgid "Sites related to cheating (tests, examinations, etc.)"
+msgstr "Sites relatifs aux tricheries (examens, concours, etc.)"
+
+msgid "Web sites for e-mail consultation"
+msgstr "Site WEB permettant de consultation son courrier électronique"
+
+msgid "Sites related to cracked softwares"
+msgstr "Sites relatifs aux logiciels piratés (crackés), aux générateurs de clés, etc.\""
