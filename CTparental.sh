@@ -7,14 +7,24 @@
 # présente dans le code du projet alcasar en version 2.6.1 ; web page http://www.alcasar.net/
  
 # This script is distributed under the Gnu General Public License (GPL)
+DIR_CONF="/usr/local/etc/CTparental"
+#chargement des locales.
+set -a
+source gettext.sh
+set +a
+export TEXTDOMAINDIR="$DIR_CONF/locale"
+export TEXTDOMAIN=${LANG:0:2}
+. /usr/bin/gettext.sh
+
+
 arg1=${1}
 if [ $# -ge 1 ];then
-if [ $arg1 != "-listusers" ] ; then
-if [ ! $UID -le 499 ]; then # considère comme root tous les utilisateurs avec un uid inferieur ou egale a 499,ce qui permet à apt-get,urpmi,yum... de lancer le script sans erreur.
-   echo "Il vous faut des droits root pour lancer ce script"
-   exit 1
-fi
-fi
+	if [ $arg1 != "-listusers" ] ; then
+		if [ ! $UID -le 499 ]; then # considère comme root tous les utilisateurs avec un uid inferieur ou egale a 499,ce qui permet à apt-get,urpmi,yum... de lancer le script sans erreur.
+		   echo $(gettext "It root of the need to run this script.")
+		   exit 1
+		fi
+	fi
 fi
 if  [ $(groups $(whoami) | grep -c -E "( ctoff$)|( ctoff )") -eq 0 ];then
   export https_proxy=http://127.0.0.1:8080
@@ -43,7 +53,7 @@ for (( narg=1; narg<=$#; narg++ )) ; do
 	     narg=$(( $narg +1 ))
 	     DIRhtmlPersonaliser=${ARGS[$narg]}
 	     if [ ! -d $DIRhtmlPersonaliser ];then
-		echo "Chemin de répertoire non valide!"
+		echo $(gettext "Invalid directory path!")
 		exit 0
 	     fi
 	  ;;
@@ -52,7 +62,7 @@ done
 pause () {   # fonction pause pour debugage
       MESSAGE="$*"
       choi=""
-      MESSAGE=${MESSAGE:="pour continuer appuyez sur une touche :"}
+      MESSAGE=${MESSAGE:=$(gettext "continue to press a button:")}
       echo  "$MESSAGE"
       while (true); do
          read choi
@@ -64,7 +74,6 @@ pause () {   # fonction pause pour debugage
       done
 }
 SED="/bin/sed -i"
-DIR_CONF="/usr/local/etc/CTparental"
 FILE_CONF="$DIR_CONF/CTparental.conf"
 FILE_GCTOFFCONF="$DIR_CONF/GCToff.conf"
 FILE_HCOMPT="$DIR_CONF/CThourscompteur"
@@ -105,7 +114,7 @@ COMMONFILEGS="common-auth"
 GESTIONNAIREDESESSIONS=" login gdm lightdm slim kdm xdm lxdm gdm3 "
 FILEPAMTIMECONF="/etc/security/time.conf"
 DIRPAM="/etc/pam.d/"
-DAYS=${DAYS:="lundi mardi mercredi jeudi vendredi samedi dimanche "}
+DAYS=${DAYS:="$(gettext "monday") $(gettext "tuesday") $(gettext "wednesday") $(gettext "thursday") $(gettext "friday") $(gettext "saturday") $(gettext "sunday") "}
 DAYS=( $DAYS )
 DAYSPAM=( Mo Tu We Th Fr Sa Su )
 DAYSCRON=( mon tue wed thu fri sat sun )
@@ -195,22 +204,22 @@ if [ $? -eq 0 ] ; then
 fi
 
 if [ $( echo $CMDINSTALL | wc -m ) -eq 1 ] ; then
-   echo "Aucun gestionner de paquet connu , n'a été détecté."
+   echo $(gettext "No known package manager, was detected.")
    set -e
    exit 1
 fi
+if [ $UID -le 499 ]; then
+	interface_WAN=$(ip route | awk '/^default via/{print $5}' | sort -u ) 
+	ipbox=$(ip route | awk '/^default via/{print $3}' | sort -u )   # suppose que la passerelle est la route par défaut
+	ipinterface_WAN=$(ifconfig $interface_WAN | awk '/adr:/{print $2}' | cut -d":" -f2)
+	reseau_box=$(ip route | grep / | grep "$interface_WAN" | cut -d" " -f1 )
+	ip_broadcast=$(ifconfig $interface_WAN | awk '/Bcast:/{print $3}' | cut -d":" -f2)
 
-interface_WAN=$(ip route | awk '/^default via/{print $5}' | sort -u ) 
-ipbox=$(ip route | awk '/^default via/{print $3}' | sort -u )   # suppose que la passerelle est la route par défaut
-ipinterface_WAN=$(ifconfig $interface_WAN | awk '/adr:/{print $2}' | cut -d":" -f2)
-reseau_box=$(ip route | grep / | grep "$interface_WAN" | cut -d" " -f1 )
-ip_broadcast=$(ifconfig $interface_WAN | awk '/Bcast:/{print $3}' | cut -d":" -f2)
-
-DNS1=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f1)
-DNS2=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f2)
-
+	DNS1=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f1)
+	DNS2=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f2)
+fi
 resolvconffixon () {
-echo "resolvconffixon"
+echo "<resolvconffixon>"
 # redemare dnsmasq 
 $DNSMASQstop
 
@@ -221,17 +230,17 @@ resolvconf -u
 cat /etc/resolv.conf | grep ^nameserver | sort -u > /etc/resolvconf/resolv.conf.d/tail
 fi
 $DNSMASQstart
-echo "fin resolvconffixon"
+echo "</resolvconffixon>"
 }
 resolvconffixoff () {
-echo "resolvconffixoff"
+echo "<resolvconffixoff>"
 $DNSMASQstop	
 resolvconf -u 2&> /dev/null 
 if [ $? -eq 1 ];then # si resolvconf et bien installé
 echo > /etc/resolvconf/resolv.conf.d/tail
 resolvconf -u
 fi
-echo "fin resolvconffixoff"
+echo "</resolvconffixoff>"
 }
 
 
@@ -290,7 +299,7 @@ EOF
 confe2guardian () {
   # replace the default deny HTML page
  
-  echo "confe2guardian"
+  echo "<confe2guardian>"
   $SED "s?^loglevel =.*?loglevel = 0?g" $FILEConfe2gu   
   $SED "s?^languagedir =.*?languagedir = '/usr/share/e2guardian/languages'?g" $FILEConfe2gu  
   $SED "s?^language =.*?language = 'french'?g" $FILEConfe2gu  
@@ -321,20 +330,20 @@ cat << EOF > /etc/e2guardian/lists/bannedsitelist
 #remove the # from the next line to leave only a '**ips':
 #**ips
 
-#le filtrage de domaines est géré par dnsmasq, ne pas toucher ce fichier!!"
+$(gettext "#the domain filtering is handled by dnsmasq, do not touch this file !!")
 
 EOF
 
 $DANSGOUARDIANrestart
- cp -f /usr/local/share/CTparental/e2guardian_conf/template.html /usr/share/e2guardian/languages/ukenglish/
- cp -f /usr/local/share/CTparental/e2guardian_conf/template-fr.html /usr/share/e2guardian/languages/french/template.html
- sed -i "s/é/\&eacute;/g" /usr/share/e2guardian/languages/french/messages
- sed -i "s/è/\&egrave;/g" /usr/share/e2guardian/languages/french/messages
- $DANSGOUARDIANrestart
-echo "fin confe2guardian" 
+cp -f /usr/local/share/CTparental/e2guardian_conf/template.html /usr/share/e2guardian/languages/ukenglish/
+cp -f /usr/local/share/CTparental/e2guardian_conf/template-fr.html /usr/share/e2guardian/languages/french/template.html
+sed -i "s/é/\&eacute;/g" /usr/share/e2guardian/languages/french/messages
+sed -i "s/è/\&egrave;/g" /usr/share/e2guardian/languages/french/messages
+$DANSGOUARDIANrestart
+echo "</confe2guardian>"
 }
 confprivoxy () {
-echo "confprivoxy"
+echo "<confprivoxy>"
 $SED "s?^debug.*?debug = 0?g"  $PRIVOXYCONF  
 $SED "s?^listen-address.*?listen-address  127.0.0.1:$PROXYport?g"  $PRIVOXYCONF 
 
@@ -377,7 +386,7 @@ echo ' .dailymotion.*/.*enable=(?!true)' >> $PRIVOXYCTA
 
 $PRIVOXYrestart
 setproxy
-echo "fin confprivoxy"
+echo "</confprivoxy>"
 }
 unsetproxy () {
 for user in `listeusers` ; do	
@@ -461,7 +470,7 @@ download() {
    rm -rf $tempDIR
    mkdir $tempDIR
    # on attend que la connection remonte suite au redemarage de networkmanager
-   echo "attente de connexion au serveur de toulouse:"
+   echo $(gettext "Waiting to Connect to Server from Toulouse:")
    i=1
    while [ $(ping -c 1 $BL_SERVER 2> /dev/null | grep -c "1 received"  ) -eq 0 ]
    do
@@ -469,24 +478,24 @@ download() {
    sleep 1
    i=$(($i + 1 ))
    if [ $i -ge 40 ];then # si au bout de 40 secondes on a toujours pas de connection on considaire qu'il y a une erreur
-		echo "connexion a $BL_SERVER impossible."
+		echo $(gettext "The connection to the server of Toulouse is impossible.")
 		set -e
 		exit 1
    fi
    done
    echo
-   echo "connexion établie:"
+   echo $(gettext "connection established:")
    
    wget -P $tempDIR http://$BL_SERVER/blacklists/download/blacklists.tar.gz 2>&1 | cat
    if [ ! $? -eq 0 ]; then
-      echo "erreur lors du téléchargement, processus interrompu"
+      echo $(gettext "error when downloading, interrupted process")
       rm -rf $tempDIR
       set -e
       exit 1
    fi
    tar -xzf $tempDIR/blacklists.tar.gz -C $tempDIR
    if [ ! $? -eq 0 ]; then
-      echo "erreur d'extraction de l'archive, processus interrompu"
+      echo $(gettext "archive extraction error , interrupted process")
       set -e
       exit 1
    fi
@@ -550,7 +559,7 @@ adapt() {
 			echo "$categorie" >> $WL_CATEGORIES_AVAILABLE
 		fi
 	   done
-         echo -n "Toulouse Black and White List migration process. Please wait : "
+         echo -n $(gettext "blacklist and WhiteList , migration process. Please wait :")" "
          for DOMAINE in `cat  $CATEGORIES_AVAILABLE`  # pour chaque catégorie
          do
             echo -n "."
@@ -589,7 +598,7 @@ adapt() {
 date +%H:%M:%S
 }
 catChoice() {
-#   echo "catChoice"
+   echo "<catChoice>"
    rm -rf $DIR_DNS_BLACKLIST_ENABLED/
    mkdir $DIR_DNS_BLACKLIST_ENABLED
    rm -rf  $DIR_DNS_WHITELIST_ENABLED/
@@ -605,12 +614,12 @@ catChoice() {
      	 fi     
       done
       cp $DIR_DNS_FILTER_AVAILABLE/ossi.conf $DIR_DNS_BLACKLIST_ENABLED/
-#      echo "fincatChoice"
+   echo "</catChoice>"
       reabdomaine
 }
 
 reabdomaine () {
-echo reabdomaine
+echo "<reabdomaine>"
 date +%H:%M:%S
 $MFILEtmp
 if [ ! -f $DREAB ] ; then
@@ -623,7 +632,7 @@ if [ ! -f $DIR_DNS_BLACKLIST_ENABLED/ossi.conf ] ; then
 	echo > $DIR_DNS_BLACKLIST_ENABLED/ossi.conf
 fi
 echo
-echo -n "Application de la liste blanche (domaine réhabilité):"
+echo -n $(gettext "Application whitelisting (restored area):")
 for CATEGORIE in `cat  $CATEGORIES_ENABLED  `  # pour chaque catégorie
 do 
 	is_blacklist=`grep $CATEGORIE $BL_CATEGORIES_AVAILABLE |wc -l`
@@ -682,12 +691,12 @@ echo "address=/.bing.com/$(host -ta bing.com|cut -d" " -f4)" >> $DIR_DNS_BLACKLI
 echo "address=/search.yahoo.com/127.0.0.10" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
 
 
-
+echo "</reabdomaine>"
 
 }
 
 dnsmasqon () {
-echo "dnsmasqon"
+echo "<dnsmasqon>"
    categorie1=$(sed -n "1 p" $CATEGORIES_ENABLED) # on considère que si la 1ère catégorie activée est un blacklist on fonctionne par blacklist.
    is_blacklist=$(grep $categorie1 $BL_CATEGORIES_AVAILABLE |wc -l)
    if [ $is_blacklist -ge "1" ] ; then
@@ -716,13 +725,15 @@ $PRIVOXYrestart
 else
   dnsmasqwhitelistonly
 fi
-echo "fin dnsmasqon"
+echo "</dnsmasqon>"
 }
 dnsmasqoff () {
+echo "<dnsmasqoff>"
    $SED "s?^DNSMASQ.*?DNSMASQ=OFF?g" $FILE_CONF
    resolvconffixoff
    $DANSGOUARDIANrestart
 $PRIVOXYrestart
+echo "</dnsmasqoff>"
 }
 ipMaskValide() {
 ip=$(echo $1 | cut -d"/" -f1)
@@ -902,7 +913,7 @@ initfileiptables () {
 }
 
 iptablesreload () {
-	echo "iptablesreload"
+   echo "<iptablesreload>"
    ### SUPPRESSION de TOUTES LES ANCIENNES TABLES (OUVRE TOUT!!) ###
    $IPTABLES -F
    $IPTABLES -X
@@ -951,10 +962,10 @@ iptablesreload () {
    
 updatecauser
 setproxy
-echo "fin iptablesreload"
+echo "</iptablesreload>"
 }
 updatecauser () {
-echo "updatecauser"
+echo "<updatecauser>"
 for user in `listeusers` ; do	
 	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
 	if [ -d $HOMEPCUSER ] ;then
@@ -973,7 +984,7 @@ for user in `listeusers` ; do
 		done
 	fi
 done
-echo "fin updatecauser"
+echo "</updatecauser>"
 }
 iptablesoff () {
 
@@ -1014,7 +1025,7 @@ $PRIVOXYrestart
 
 
 FoncHTTPDCONF () {
-echo "FoncHTTPDCONF"
+echo "<FoncHTTPDCONF>"
 $LIGHTTPDstop
 rm -rf $DIRHTML/*
 mkdir $DIRHTML 2> /dev/null
@@ -1263,40 +1274,38 @@ CActparental
 $LIGHTTPDstart
 test=$?
 if [ ! $test -eq 0 ];then
-	echo "Erreur au lancement du service lighttpd "
+	echo $(gettext "Error launching of lighttpd Service")
 	set -e
 	exit 1
 fi
-echo "fin FoncHTTPDCONF"
+echo "</FoncHTTPDCONF>"
 }
 configloginpassword () {
 PTNlogin='^[a-zA-Z0-9]*$'
 while (true)
 do
-     
-	loginhttp=$(whiptail --title "Login" --nocancel --inputbox "Entrer le login pour l'interface d'administration 
-- que des lettres ou des chiffres .
-- 6 caractères minimum :" 10 60 3>&1 1>&2 2>&3)			
+loginhttp=$(whiptail --title "$(gettext "Login")" --nocancel --inputbox "$(gettext "Enter login to the administration interface") 
+$(gettext "- Only letters or numbers.")
+$(gettext "- 6 characters minimum:")" 10 60 3>&1 1>&2 2>&3)			
 	if [ $(expr $loginhttp : $PTNlogin) -gt 6  ];then 
 		break
 	fi	
-
 done
 while (true)
 do
-password=$(whiptail --title "Mot de passe" --nocancel --passwordbox "Entrez votre mot de passe pour $loginhttp et validez par Ok pour continuer." 10 60 3>&1 1>&2 2>&3)
-		password2=$(whiptail --title "Mot de passe" --nocancel --passwordbox "Confirmez votre mot de passe pour $loginhttp et validez par Ok pour continuer." 10 60 3>&1 1>&2 2>&3)
+password=$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Enter your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)
+		password2=$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Confirm your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)
 		if [ $password = $password2 ] ; then
 			
 			if [ $(echo $password | grep -E [a-z] | grep -E [0-9] | grep -E [A-Z] | grep -E '[&éè~#{}()ç_@à?.;:/!,$<>=£%]' | wc -c ) -ge 8 ] ; then
 				break
 			else
-				whiptail --title "Mot de passe" --msgbox "Mot de passe n'est pas assez complexe, il doit contenir au moins:
-- 8 caractères au total,1 Majuscule,1 minuscule,1 nombre
-et 1 caractère spécial parmis les suivants &éè~#{}()ç_@à?.;:/!,$<>=£% " 14 60 
+				whiptail --title "$(gettext "Password")" --msgbox "$(gettext "Password is not complex enough, it must contain at least:")
+$(gettext "- 8 characters total, 1 Uppercase, lowercase 1, number 1")
+$(gettext "and one special character among the following") &éè~#{}()ç_@à?.;:/!,$<>=£% " 14 60 
 			fi
 		else
-		    whiptail --title "Mot de passe" --msgbox "Le mot de passe rentré n'est pas identique au premier." 14 60 
+		    whiptail --title "$(gettext "Password")" --msgbox "$(gettext "The password entered is not identical to the first.")" 14 60 
 				
 		fi
 
@@ -1304,7 +1313,7 @@ done
 addadminhttpd "$loginhttp" "$password"
 }
 CActparental () {
-echo "CActparental"
+echo "<CActparental>"
 DIR_TMP=${TMPDIR-/tmp}/ctparental-mkcert.$$
 mkdir $DIR_TMP
 mkdir $CADIR 2> /dev/null
@@ -1340,7 +1349,7 @@ cat $DIR_TMP/search.yahoo.com.key $DIR_TMP/search.yahoo.com.crt > $PEMSRVDIR/sea
 rm -rf $DIR_TMP
 
 updatecauser
-echo "fin CActparental"
+echo "</CActparental>"
 }
 
 
@@ -1382,9 +1391,9 @@ install () {
 		$EDIT $DIR_CONF/dist.conf
 		clear
 		cat  $DIR_CONF/dist.conf | grep -v -E ^# | grep -v ^$
-		echo "Entrer : S pour continuer avec ces paramètres ."
-		echo "Entrer : Q pour Quiter l'installation."
-		echo "Entrez tout autre choix pour modifier les paramètres."
+		echo $(gettext "Enter: S to continue with these parameters.")
+		echo $(gettext "Enter Q to Quit Setup.")
+		echo $(gettext "Enter any other choice to change settings.")
 		 read choi
 		case $choi in
 			 S | s )
@@ -1463,7 +1472,7 @@ install () {
       else
          tar -xzf blacklists.tar.gz -C $tempDIR
          if [ ! $? -eq 0 ]; then
-            echo "Erreur d'extraction de l'archive, processus interrompu"
+            echo $(gettext "archive extraction error , interrupted process")
             uninstall
             set -e
             exit 1
@@ -1529,7 +1538,7 @@ applistegctoff () {
 }
 
 activegourpectoff () {
-echo "activegourpectoff"
+echo "<activegourpectoff>"
    groupadd ctoff
    $SED "s?^GCTOFF.*?GCTOFF=ON?g" $FILE_CONF
    updatelistgctoff
@@ -1541,7 +1550,7 @@ echo "activegourpectoff"
    echo "PATH=$PATH"  > /etc/cron.d/CTparentalupdateuser
    echo "*/1 * * * * root /usr/local/bin/CTparental.sh -ucto" >> /etc/cron.d/CTparentalupdateuser
    $CRONrestart
-echo "fin activegourpectoff"
+echo "</activegourpectoff>"
 }
 
 desactivegourpectoff () {
@@ -1552,7 +1561,7 @@ desactivegourpectoff () {
 uninstall () {
    # On force la désinstall par dpkg ou rpm si l'install a était effectuer par un paquage.
    if [ $nomanuel -eq 0 ]; then 
-	   muninstall="Une install par paquet a été détectée veuillez utiliser cette commande pour désinstaller ctparental."
+	   muninstall=$(gettext "Install a packet was detected please use this command to uninstall ctparental.")
 	   if [ $(dpkg -l ctparental | grep -c ^i) -eq 1 ] ;then
 			echo "$muninstall"
 			echo "$CMDREMOVE ctparental"
@@ -1643,17 +1652,17 @@ uninstall () {
 choiblenabled () {
 echo -n > $CATEGORIES_ENABLED
 clear
-echo "Voulez-vous filtrer par Blacklist ou Whitelist :"
+echo $(gettext "Want to filter by, Blacklist or Whitelist:")
 echo -n " B/W :"
 while (true); do
          read choi
          case $choi in
          B | b )
-         echo "Vous allez maintenant choisir les \"Black listes\" à appliquer."
+         echo $(gettext "Choice of filtered categories.")
 		for CATEGORIE in `cat  $BL_CATEGORIES_AVAILABLE`  # pour chaque catégorie
 		do   
 		      clear
-		      echo "Voulez vous activer la categorie :"
+		      echo $(gettext "You want to enable this category:")
 		      echo -n "$CATEGORIE  O/N :"
 		      while (true); do
 			 read choi
@@ -1671,11 +1680,11 @@ while (true); do
          break
          ;;
          W | w )
-         echo "Vous allez maintenant choisir les \"White listes\" à appliquer."
+        echo $(gettext "Choice of unfiltered categories.")
 		for CATEGORIE in `cat  $WL_CATEGORIES_AVAILABLE`  # pour chaque catégorie
 		do   
 		      clear
-		      echo "Voulez vous activer la categorie :"
+		      echo $(gettext "You want to enable this category:")
 		      echo -n "$CATEGORIE  O/N :"
 		      while (true); do
 			 read choi
@@ -1699,15 +1708,23 @@ done
 
 errortime1 () {
 clear
-echo -e "L'heure de début doit être strictement inférieure à l'heure de fin: $RougeD$input$Fcolor "
-echo "exemple: 08h00 à 23h59 ou 08h00 à 12h00 et 14h00 à 23h59"
-echo -e -n "$RougeD$PCUSER$Fcolor est autorisé à se connecter le $BleuD${DAYS[$NumDAY]}$Fcolor de :"
+at=$(gettext "at")
+and=$(gettext "and")
+h=$(gettext ":")
+or=$(gettext "or")
+echo -e "$(gettext "The start time must be strictly less than the end time:")$RougeD$input$Fcolor "
+echo "exemple: 00${h}00 $at 23${h}59 $or 08${h}00 $at 12${h}00 $and 14${h}00 $at 16${h}50"
+echo -e -n "$RougeD$PCUSER$Fcolor $(gettext "is allowed to connect the") $BleuD${DAYS[$NumDAY]}$Fcolor $(gettext "at :")"
 }
 errortime2 () {
 clear
-echo -e "Mauvaise syntaxe: $RougeD$input$Fcolor "
-echo "exemple: 08h00 à 23h59 ou 08h00 à 12h00 et 14h00 à 23h59"
-echo -e -n "$RougeD$PCUSER$Fcolor est autorisé à se connecter le $BleuD${DAYS[$NumDAY]}$Fcolor de :"
+at=$(gettext "at")
+and=$(gettext "and")
+h=$(gettext ":")
+or=$(gettext "or")
+echo -e "$(gettext "Bad syntax:")$RougeD$input$Fcolor "
+echo "exemple: 00${h}00 $at 23${h}59 $or 08${h}00 $at 12${h}00 $and 14${h}00 $at 16${h}50"
+echo -e -n "$RougeD$PCUSER$Fcolor $(gettext "is allowed to connect the") $BleuD${DAYS[$NumDAY]}$Fcolor $(gettext "at :")"
 }
 
 
@@ -1789,8 +1806,8 @@ requiredpamtime (){
 		  fi
 	   done
 	   if [ $( echo $TESTGESTIONNAIRE | wc -m ) -eq 1 ] ; then
-		  echo "Aucun gestionnaire de session connu n'a été détecté."
-		  echo " il est donc impossible d'activer le contrôle horaire des connexions"
+		  echo $(gettext "No known session manager has been detected.")
+		  echo " $(gettext "so it is impossible to activate the time control connections")"
 		  desactivetimelogin
 		  exit 1
 	   fi
@@ -1815,7 +1832,7 @@ requiredpamtime
    do
    HOMEPCUSER=$(getent passwd "$PCUSER" | cut -d ':' -f6)
    $SED "/^$PCUSER=/d" $FILE_HCONF
-   echo -e -n "$PCUSER est autorisé à se connecter 7j/7 24h/24 O/N?" 
+   echo -e -n "$PCUSER $(gettext "is allowed to connect 7/7 24/24") O/N?" 
    choi=""
    while (true); do
    read choi
@@ -1828,7 +1845,7 @@ requiredpamtime
 	 N| n )
          alltime="N"
          clear
-         echo -e "$PCUSER est autorisé à se connecter X minutes par jours" 
+         echo -e "$PCUSER $(gettext "is allowed to connect X minutes per day")" 
          echo -e -n "X (1 a 1440) = " 
          while (true); do
          read choi
@@ -1837,7 +1854,7 @@ requiredpamtime
 				break
 			fi
 		 fi	
-         echo " X doit prendre un valeur entre 1 et 1440 "
+         echo " $(gettext "X must take a value between 1 and 1440")"
          done
          echo "$PCUSER=user=$choi" >> $FILE_HCONF
 		 break
@@ -1852,8 +1869,12 @@ requiredpamtime
 	 fi
 	 
          clear
-         echo "exemple: 00h00 à 23h59 ou 08h00 à 12h00 et 14h00 à 16h50"
-         echo -e -n "$RougeD$PCUSER$Fcolor est autorisé à se connecter le $BleuD${DAYS[$NumDAY]}$Fcolor de :"
+         at=$(gettext "at")
+         and=$(gettext "and")
+         h=$(gettext ":")
+         or=$(gettext "or")
+         echo "exemple: 00${h}00 $at 23${h}59 $or 08${h}00 $at 12${h}00 $and 14${h}00 $at 16${h}50"
+         echo -e -n "$RougeD$PCUSER$Fcolor $(gettext "is allowed to connect the") $BleuD${DAYS[$NumDAY]}$Fcolor $(gettext "at :")"
          while (true); do
             read choi
             input=$choi
@@ -1947,7 +1968,7 @@ $CRONrestart
 }
 
 desactivetimelogin () {
-echo "desactivetimelogin"
+echo "<desactivetimelogin>"
 for FILE in `echo $GESTIONNAIREDESESSIONS`
 do
    $SED "/account required pam_time.so/d" $DIRPAM$FILE 2> /dev/null
@@ -1969,7 +1990,7 @@ done
 echo "date=$(date +%D)" > $FILE_HCOMPT
 echo > $FILE_HCONF
 $CRONrestart
-echo "fin desactivetimelogin"
+echo "</desactivetimelogin>"
 }
 
 
@@ -2065,55 +2086,71 @@ $CRONrestart
 
 # and func # ne pas effacer cette ligne !!
 
-usage="Usage: CTparental.sh    {-i }|{ -u }|{ -dl }|{ -ubl }|{ -rl }|{ -on }|{ -off }|{ -cble }|{ -dble }
+usage="$(gettext "Use"): CTparental.sh    {-i }|{ -u }|{ -dl }|{ -ubl }|{ -rl }|{ -on }|{ -off }|{ -cble }|{ -dble }
                                |{ -tlo }|{ -tlu }|{ -uhtml }|{ -aupon }|{ -aupoff }|{ -aup } 
--i      => Installe le contrôle parental sur l'ordinateur (pc de bureau). Peut être utilisé avec
-           un paramètre supplémentaire pour indiquer un chemin de sources pour la page web de redirection.
-           exemple : CTparental.sh -i -dirhtml /home/toto/html/
-           si pas d'option le \"sens interdit\" est utilisé par défaut.
--u      => désinstalle le contrôle parental de l'ordinateur (pc de bureau)
--dl     => met à jour le contrôle parental à partir de la blacklist de l'université de Toulouse
--ubl    => A faire après chaque modification du fichier $DNS_FILTER_OSSI
--rl     => A faire après chaque modification manuelle du fichier $DREAB
--on     => Active le contrôle parental
--off    => Désactive le contrôle parental
--cble   => Configure le mode de filtrage par liste blanche ou par liste noire (défaut) ainsi que les 
-           catégories que l'on veut activer.
--dble   => Remet les catégories actives par défaut et le filtrage par liste noire.
--tlo    => Active et paramètre les restrictions horaires de login pour les utilisateurs.
-           Compatible avec les gestionnaire de sessions suivant $GESTIONNAIREDESESSIONS .
--tlu    => Désactive les restrictions horaires de login pour les utilisateurs.
--uhtml  => met à jour la page de redirection à partir d'un répertoire source ou par défaut avec 
-            le \"sens interdit\".
-            exemples:
-                     - avec un repertoire source : CTparental.sh -uhtml -dirhtml /home/toto/html/
-   		     - par défaut :              CTparental.sh -uhtml
-            permet aussi de changer le couple login, mot de passe de l'interface web.
--aupon  => active la mise à jour automatique de la blacklist de Toulouse (tous les 7 jours).
--aupoff => désactive la mise à jour automatique de la blacklist de Toulouse.
--aup    => comme -dl mais seulement si il n'y a pas eu de mise à jour depuis plus de 7 jours.
--nodep  => si placé aprés -i ou -u permet de ne pas installer/désinstaller les dépendances, utiles si  
-            on préfère les installer à la main , ou pour le script de postinst et prerm  
-            du deb.
-            exemples:
-                     CTparental.sh -i -nodep	
-		     CTparental.sh -i -dirhtml /home/toto/html/ -nodep   
-		     CTparental.sh -u -nodep 
--nomanuel =>  utilisé uniquement pour le script de postinst et prerm  
-            du deb.
--gcton	  => crée un groupe de privilégiés ne subissant pas le filtrage.
-			 exemple:CTparental.sh -gctulist
-			 editer $FILE_GCTOFFCONF et y commenter tous les utilisateurs que l'on veut filtrer.
-			 CTparental.sh -gctalist
--gctoff   => supprime le groupe de privilégiés .
-			 tous les utilisateurs du système subissent le filtrages!!
--gctulist => Met a jour le fichier de conf du groupe , $FILE_GCTOFFCONF
-			 en fonction des utilisateurs ajoutés ou supprimés du pc.
--gctalist => Ajoute/Supprime les utilisateurs dans le group ctoff en fonction du fichier de conf.
--ipton	  => Active les règles de pare-feu personnalisées.
--iptoff   => Désactive les règles de pare-feu personnalisées.
-	 
- "
+-i$(gettext "	=> Install parental controls on the computer (desktop PC). Can be used with
+	   an additional parameter to specify a source path for the redirection page.
+	   example: CTparental.sh -dirhtml -i /home/toto/html/
+	   if no option a page by default is used.")
+	   
+-u$(gettext "	=> uninstall the Parental Control Computer (desktop PC)")
+
+-dl$(gettext "	=> updates parental control from the blacklist of the University of Toulouse")
+
+-ubl$(gettext "	=> What to do after each change of the file") $DNS_FILTER_OSSI
+
+-rl$(gettext "	=> What to do after each change of the file") $DREAB
+
+-on$(gettext "	=> Enable parental control")
+
+-off$(gettext "	=> Disable parental controls")
+
+-cble$(gettext "	=> Set the filter mode by whitelist or blacklist (default)
+	   and the categories that you want to activate.")
+	   
+-dble$(gettext "	=> Resets the default active categories and blacklist filtering.")
+
+-tlo$(gettext "	=> Enable and configure the login time restrictions for users.")
+
+-tlu$(gettext "	=> Disable the login time restrictions for users.")
+
+-uhtml$(gettext "	=> updates the redirect page from a source directory or default.
+	   examples:
+	           - With a source directory: CTparental.sh -uhtml -dirhtml /home/toto/html/
+	           - Default: CTparental.sh -uhtml
+	   also lets you change the login couple password of the web interface.")
+	   
+-aupon$(gettext "	=> Enable the automatic update of the blacklist of Toulouse (every 7 days).")
+
+-aupoff$(gettext "	=> Disable the automatic update of the blacklist of Toulouse.")
+
+-aup$(gettext "	=> as -dl but only if there is no update for more than 7 days.")
+
+-nodep$(gettext "	=> if placed after -i or -u allows not install / uninstall the dependencies useful if
+	   we prefer to install them by hand, or for the postinst and prerm script of deb.
+	   examples:
+	   CTparental.sh -i -nodep
+	   CTparental.sh -dirhtml -i /home/toto/html/ -nodep
+	   CTparental.sh -u -nodep")
+	   
+-nomanuel$(gettext "	=> used only for the postinst and prerm script.")
+
+-gcton$(gettext "	=> Enable privileged group.
+	   exemples:
+	           CTparental.sh -gctulist
+	           Comment all users that you want to filter in ")$FILE_GCTOFFCONF 
+	           CTparental.sh -gctalist
+	           
+-gctoff$(gettext "	=> Disable privileged group.")
+	   $(gettext "all users of the system undergo the filtering !!")
+	   			 
+	   			 
+-gctalist$(gettext "	=> Add / delete users in the ctoff group based on the config file ,") $FILE_GCTOFFCONF
+
+-ipton$(gettext "	=> Enable rules of custom firewall.")
+
+-iptoff$(gettext "	=> Disable rules of custom firewall.")
+"
 case $arg1 in
    -\? | -h* | --h*)
       echo "$usage"
@@ -2258,9 +2295,9 @@ case $arg1 in
     -ipton )
       $SED "s?.*IPRULES.*?IPRULES=ON?g" $FILE_CONF
       iptablesreload
-      echo -e "$RougeD pour ajouter des règles personalisées éditez le fichier "
+      echo -e "$RougeD $(gettext "to add custom rules edit the file") "
       echo " $FILEIPTABLES "
-      echo -e " puis relancez la commande CTparental.sh -ipton $Fcolor"
+      echo -e " $(gettext "then run the command") CTparental.sh -ipton $Fcolor"
       exit 0
       ;;
     -iptoff )
@@ -2289,7 +2326,7 @@ case $arg1 in
       ;;       
       
    *)
-      echo "Argument inconnu :$1";
+      echo "$(gettext "unknown argument"):$1";
       echo "$usage";
       exit 1
       ;;

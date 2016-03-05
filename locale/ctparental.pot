@@ -1,0 +1,259 @@
+# Copyright: © 2013-2016 Guillaume Marsat <guillaume.marsat@laposte.net>
+# License: GPL-3+
+msgid "It root of the need to run this script."
+msgstr ""
+
+msgid "invalid directory path!"
+msgstr ""
+
+msgid "continue to press a button:"
+msgstr ""
+
+msgid "monday"
+msgstr ""
+
+msgid "tuesday"
+msgstr ""
+
+msgid "wednesday"
+msgstr ""
+
+msgid "thursday"
+msgstr ""
+
+msgid "friday"
+msgstr ""
+
+msgid "saturday"
+msgstr ""
+
+msgid "sunday"
+msgstr ""
+
+msgid "No known package manager, was detected."
+msgstr ""
+
+msgid "#the domain filtering is handled by dnsmasq, do not touch this file !!"
+msgstr ""
+
+msgid "Waiting to Connect to Server from Toulouse:"
+msgstr ""
+
+msgid "The connection to the server of Toulouse is impossible."
+msgstr ""
+
+msgid "connection established:"
+msgstr ""
+
+msgid "error when downloading, interrupted process"
+msgstr ""
+
+msgid "archive extraction error , interrupted process"
+msgstr ""
+
+msgid "blacklist and WhiteList , migration process. Please wait :"
+msgstr ""
+
+msgid "Application whitelisting (restored area):"
+msgstr ""
+
+msgid "Error launching of lighttpd Service"
+msgstr ""
+
+msgid "Login"
+msgstr ""
+
+msgid "Enter login to the administration interface"
+msgstr ""
+
+msgid "- Only letters or numbers."
+msgstr ""
+
+msgid "- 6 characters minimum:"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Enter your password and press OK to continue."
+msgstr ""
+
+msgid "Confirm your password and press OK to continue."
+msgstr ""
+
+msgid "Password is not complex enough, it must contain at least:"
+msgstr ""
+
+msgid "- 8 characters total, 1 Uppercase, lowercase 1, number 1"
+msgstr ""
+
+msgid "and one special character among the following"
+msgstr ""
+
+msgid "The password entered is not identical to the first."
+msgstr ""
+
+msgid "Enter: S to continue with these parameters."
+msgstr ""
+
+msgid "Enter Q to Quit Setup."
+msgstr ""
+
+msgid "Enter any other choice to change settings."
+msgstr ""
+
+msgid "Install a packet was detected please use this command to uninstall ctparental."
+msgstr ""
+
+msgid "Want to filter by, Blacklist or Whitelist:"
+msgstr ""
+
+msgid "Choice of filtered categories."
+msgstr ""
+
+msgid "You want to enable this category:"
+msgstr ""
+
+msgid "Choice of unfiltered categories."
+msgstr ""
+
+msgid "The start time must be strictly less than the end time:"
+msgstr ""
+
+msgid "is allowed to connect the"
+msgstr ""
+
+msgid "at :"
+msgstr ""
+
+msgid "Bad syntax:"
+msgstr ""
+
+msgid "No known session manager has been detected."
+msgstr ""
+
+msgid "so it is impossible to activate the time control connections"
+msgstr ""
+
+msgid "is allowed to connect 7/7 24/24"
+msgstr ""
+
+msgid "is allowed to connect X minutes per day"
+msgstr ""
+
+msgid "X must take a value between 1 and 1440"
+msgstr ""
+
+msgid "Use"
+msgstr ""
+
+msgid ""
+"\t=> Install parental controls on the computer (desktop PC). Can be used with\n"
+"\t   an additional parameter to specify a source path for the redirection page.\n"
+"\t   example: CTparental.sh -dirhtml -i /home/toto/html/\n"
+"\t   if no option a page by default is used."
+msgstr ""
+
+msgid "\t=> uninstall the Parental Control Computer (desktop PC)"
+msgstr ""
+
+msgid "\t=> updates parental control from the blacklist of the University of Toulouse"
+msgstr ""
+
+msgid "\t=> What to do after each change of the file"
+msgstr ""
+
+msgid "\t=> Enable parental control"
+msgstr ""
+
+msgid "\t=> Disable parental controls"
+msgstr ""
+
+msgid ""
+"\t=> Set the filter mode by whitelist or blacklist (default)\n"
+"\t   and the categories that you want to activate."
+msgstr ""
+
+msgid "\t=> Resets the default active categories and blacklist filtering."
+msgstr ""
+
+msgid "\t=> Enable and configure the login time restrictions for users."
+msgstr ""
+
+msgid "\t=> Disable the login time restrictions for users."
+msgstr ""
+
+msgid ""
+"\t=> updates the redirect page from a source directory or default.\n"
+"\t   examples:\n"
+"\t           - With a source directory: CTparental.sh -uhtml -dirhtml /home/toto/html/\n"
+"\t           - Default: CTparental.sh -uhtml\n"
+"\t   also lets you change the login couple password of the web interface."
+msgstr ""
+
+msgid "\t=> Enable the automatic update of the blacklist of Toulouse (every 7 days)."
+msgstr ""
+
+msgid "\t=> Disable the automatic update of the blacklist of Toulouse."
+msgstr ""
+
+msgid "\t=> as -dl but only if there is no update for more than 7 days."
+msgstr ""
+
+msgid ""
+"\t=> if placed after -i or -u allows not install / uninstall the dependencies useful if\n"
+"\t   we prefer to install them by hand, or for the postinst and prerm script of deb.\n"
+"\t   examples:\n"
+"\t   CTparental.sh -i -nodep\n"
+"\t   CTparental.sh -dirhtml -i /home/toto/html/ -nodep\n"
+"\t   CTparental.sh -u -nodep"
+msgstr ""
+
+msgid "\t=> used only for the postinst and prerm script."
+msgstr ""
+
+msgid ""
+"\t=> Enable privileged group.\n"
+"\t   exemples:\n"
+"\t           CTparental.sh -gctulist\n"
+"\t           Comment all users that you want to filter in "
+msgstr ""
+
+msgid "\t=> Disable privileged group."
+msgstr ""
+
+msgid "all users of the system undergo the filtering !!"
+msgstr ""
+
+msgid "\t=> Add remove Users added in sytem on the config file ,"
+msgstr ""
+
+msgid "\t=> Add / delete users in the ctoff group based on the config file ,"
+msgstr ""
+
+msgid "\t=> Enable rules of custom firewall."
+msgstr ""
+
+msgid "\t=> Disable rules of custom firewall."
+msgstr ""
+
+msgid "to add custom rules edit the file"
+msgstr ""
+
+msgid "then run the command"
+msgstr ""
+
+msgid "unknown argument"
+msgstr ""
+
+msgid "at"
+msgstr ""
+
+msgid "and"
+msgstr ""
+
+msgid ":"
+msgstr ""
+
+msgid "or"
+msgstr ""

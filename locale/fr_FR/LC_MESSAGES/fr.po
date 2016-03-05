@@ -1,0 +1,294 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr\n"
+
+# Copyright: © 2013-2016 Guillaume Marsat <guillaume.marsat@laposte.net>
+# License: GPL-3+
+msgid "It root of the need to run this script."
+msgstr "Il vous faut des droits root pour lancer ce script"
+
+msgid "invalid directory path!"
+msgstr "Chemin de répertoire non valide!"
+
+msgid "continue to press a button:"
+msgstr "pour continuer appuyez sur une touche :"
+
+msgid "monday"
+msgstr "lundi"
+
+msgid "tuesday"
+msgstr "mardi"
+
+msgid "wednesday"
+msgstr "mercredi"
+
+msgid "thursday"
+msgstr "jeudi"
+
+msgid "friday"
+msgstr "vendredi"
+
+msgid "saturday"
+msgstr "samedi"
+
+msgid "sunday"
+msgstr "dimanche"
+
+msgid "No known package manager, was detected."
+msgstr "Aucun gestionnaire de paquet connu , n'a été détecté."
+
+msgid "#the domain filtering is handled by dnsmasq, do not touch this file !!"
+msgstr "#le filtrage de domaines est géré par dnsmasq, ne pas toucher ce fichier!!"
+
+msgid "Waiting to Connect to Server from Toulouse:"
+msgstr "attente de connexion au serveur de Toulouse:"
+
+msgid "The connection to the server of Toulouse is impossible."
+msgstr "connexion au serveur de Toulouse impossible."
+
+msgid "connection established:"
+msgstr "connexion établie:"
+
+msgid "error when downloading, interrupted process"
+msgstr "erreur lors du téléchargement, processus interrompu"
+
+msgid "archive extraction error , interrupted process"
+msgstr "erreur d'extraction de l'archive, processus interrompu"
+
+msgid "blacklist and WhiteList , migration process. Please wait :"
+msgstr "Migration de la Blacklist et de la whitelist de Toulouse.Veuillez patienter."
+
+msgid "Application whitelisting (restored area):"
+msgstr "Application de la liste blanche (domaine réhabilité):"
+
+msgid "Error launching of lighttpd Service"
+msgstr "Erreur au lancement du service lighttpd"
+
+msgid "Login"
+msgstr "identifiant"
+
+msgid "Enter login to the administration interface"
+msgstr "Entrer l'identifiant  pour l'interface d'administration "
+
+msgid "- Only letters or numbers."
+msgstr "- que des lettres ou des chiffres."
+
+msgid "- 6 characters minimum:"
+msgstr "- 6 caractères minimum :"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Enter your password and press OK to continue."
+msgstr "Entrez votre mot de passe et validez par Ok pour continuer."
+
+msgid "Confirm your password and press OK to continue."
+msgstr "Confirmez votre mot de passe et validez par Ok pour continuer."
+
+msgid "Password is not complex enough, it must contain at least:"
+msgstr "Mot de passe n'est pas assez complexe, il doit contenir au moins:"
+
+msgid "- 8 characters total, 1 Uppercase, lowercase 1, number 1"
+msgstr "- 8 caractères au total,1 Majuscule,1 minuscule,1 nombre"
+
+msgid "and one special character among the following"
+msgstr "et 1 caractère spécial parmi les suivants"
+
+msgid "The password entered is not identical to the first."
+msgstr "Le mot de passe rentré n'est pas identique au premier."
+
+msgid "Enter: S to continue with these parameters."
+msgstr "Entrer : S pour continuer avec ces paramètres."
+
+msgid "Enter Q to Quit Setup."
+msgstr "Entrer : Q pour Quiter l'installation."
+
+msgid "Enter any other choice to change settings."
+msgstr "Entrez tout autre choix pour modifier les paramètres."
+
+msgid "Install a packet was detected please use this command to uninstall ctparental."
+msgstr "Une installation par paquet a été détectée veuillez utiliser cette commande pour désinstaller ctparental."
+
+msgid "Want to filter by, Blacklist or Whitelist:"
+msgstr "Voulez-vous filtrer par Blacklist ou Whitelist :"
+
+msgid "Choice of filtered categories."
+msgstr "Choisir les catégories filtrées à appliquer."
+
+msgid "You want to enable this category:"
+msgstr "Voulez vous activer la catégorie :"
+
+msgid "Choice of unfiltered categories."
+msgstr "Choisir les catégories qui ne serons pas filtrées à appliquer."
+
+msgid "The start time must be strictly less than the end time:"
+msgstr "L'heure de début doit être strictement inférieure à l'heure de fin:"
+
+msgid "is allowed to connect the"
+msgstr "est autorisé à se connecter le"
+
+msgid "at :"
+msgstr "de :"
+
+msgid "Bad syntax:"
+msgstr "Mauvaise syntaxe:"
+
+msgid "No known session manager has been detected."
+msgstr "Aucun gestionnaire de session connu n'a été détecté."
+
+msgid "so it is impossible to activate the time control connections"
+msgstr "il est donc impossible d'activer le contrôle horaire des connexions"
+
+msgid "is allowed to connect 7/7 24/24"
+msgstr "est autorisé à se connecter 7j/7 24h/24"
+
+msgid "is allowed to connect X minutes per day"
+msgstr "est autorisé à se connecter X minutes par jours"
+
+msgid "X must take a value between 1 and 1440"
+msgstr "X doit prendre un valeur entre 1 et 1440"
+
+msgid "Use"
+msgstr "Usage"
+
+msgid ""
+"\t=> Install parental controls on the computer (desktop PC). Can be used with\n"
+"\t   an additional parameter to specify a source path for the redirection page.\n"
+"\t   example: CTparental.sh -dirhtml -i /home/toto/html/\n"
+"\t   if no option a page by default is used."
+msgstr ""
+"\t=> Installe le contrôle parental sur l'ordinateur (pc de bureau). Peut être utilisé avec\n"
+"\t    un paramètre supplémentaire pour indiquer un chemin de sources pour la page web de redirection.\n"
+"\t    exemple : CTparental.sh -i -dirhtml /home/toto/html/\n"
+"\t    si pas d'option la page par défaut est utilisée."
+
+msgid "\t=> uninstall the Parental Control Computer (desktop PC)"
+msgstr "\t=> désinstalle le contrôle parental de l'ordinateur (pc de bureau)"
+
+msgid "\t=> updates parental control from the blacklist of the University of Toulouse"
+msgstr "\t=> met à jour le contrôle parental à partir de la blackliste de l'université de Toulouse"
+
+msgid "\t=> What to do after each change of the file"
+msgstr "\t=> A faire après chaque modification du fichier"
+
+msgid "\t=> Enable parental control"
+msgstr "\t=> Activer le contrôle parental"
+
+msgid "\t=> Disable parental controls"
+msgstr "\t=> Désactiver le contrôle parental"
+
+msgid ""
+"\t=> Set the filter mode by whitelist or blacklist (default)\n"
+"\t   and the categories that you want to activate."
+msgstr ""
+"\t=> Configure le mode de filtrage par liste blanche ou par liste noire (défaut)\n"
+"\t   ainsi que les catégories que l'on veut activer."
+
+msgid "\t=> Resets the default active categories and blacklist filtering."
+msgstr "\t=> Remet les catégories actives par défaut et le filtrage par blackliste."
+
+msgid "\t=> Enable and configure the login time restrictions for users."
+msgstr "\t=> Active et paramètre les restrictions horaires de login pour les utilisateurs."
+
+msgid "\t=> Disable the login time restrictions for users."
+msgstr "\t=> Désactive les restrictions horaires de login pour les utilisateurs."
+
+msgid ""
+"\t=> updates the redirect page from a source directory or default.\n"
+"\t   examples:\n"
+"\t           - With a source directory: CTparental.sh -uhtml -dirhtml /home/toto/html/\n"
+"\t           - Default: CTparental.sh -uhtml\n"
+"\t   also lets you change the login couple password of the web interface."
+msgstr ""
+"\t=> met à jour la page de redirection à partir d'un répertoire source ou par défaut.\n"
+"\t   exemples:\n"
+"\t           - avec un répertoire source : CTparental.sh -uhtml -dirhtml /home/toto/html/\n"
+"\t           - par défaut : CTparental.sh -uhtml\n"
+"\t   permet aussi de changer le couple identifiant,mot de passe de l'interface web."
+
+msgid "\t=> Enable the automatic update of the blacklist of Toulouse (every 7 days)."
+msgstr "\t=> active la mise à jour automatique de la blacklist de Toulouse (tous les 7 jours)."
+
+msgid "\t=> Disable the automatic update of the blacklist of Toulouse."
+msgstr "\t=> désactive la mise à jour automatique de la blacklist de Toulouse."
+
+msgid "\t=> as -dl but only if there is no update for more than 7 days."
+msgstr "\t=> comme -dl mais seulement si il n'y a pas eu de mise à jour depuis plus de 7 jours."
+
+msgid ""
+"\t=> if placed after -i or -u allows not install / uninstall the dependencies useful if\n"
+"\t   we prefer to install them by hand, or for the postinst and prerm script of deb.\n"
+"\t   examples:\n"
+"\t   CTparental.sh -i -nodep\n"
+"\t   CTparental.sh -dirhtml -i /home/toto/html/ -nodep\n"
+"\t   CTparental.sh -u -nodep"
+msgstr ""
+"\t=> si placé aprés -i ou -u permet de ne pas installer/désinstaller les dépendances, utiles si\n"
+"\t   on préfère les installer à la main , ou pour le script de postinst et prerm du deb.\n"
+"\t   exemples:\n"
+"\t           CTparental.sh -i -nodep\n"
+"\t           CTparental.sh -i -dirhtml /home/toto/html/ -nodep\n"
+"\t           CTparental.sh -u -nodep"
+
+msgid "\t=> used only for the postinst and prerm script."
+msgstr "\t=> utilisé uniquement pour les scripts de postinst et prerm."
+
+msgid ""
+"\t=> Enable privileged group.\n"
+"\t   exemples:\n"
+"\t           CTparental.sh -gctulist\n"
+"\t           Comment all users that you want to filter in "
+msgstr ""
+"\t=> crée un groupe de privilégiés ne subissant pas le filtrage.\n"
+"\t   exemples:\n"
+"\t           CTparental.sh -gctulist\n"
+"\t           commenter tous les utilisateurs que l'on veut filtrer dans "
+
+msgid "\t=> Disable privileged group."
+msgstr "\t=> supprime le groupe de privilégiés ."
+
+msgid "all users of the system undergo the filtering !!"
+msgstr "tous les utilisateurs du système subissent le filtrages!!"
+
+msgid "\t=> Add remove Users added in sytem on the config file ,"
+msgstr "\t=> Mais a jour le fichier de configuration,"
+
+msgid "\t=> Add / delete users in the ctoff group based on the config file ,"
+msgstr "\t=> Ajoute/Supprime les utilisateurs dans le group ctoff en fonction du fichier de configuration ,"
+
+msgid "\t=> Enable rules of custom firewall."
+msgstr "\t=> Active les règles de pare-feu personnalisées."
+
+msgid "\t=> Disable rules of custom firewall."
+msgstr "\t=> Désactive les règles de pare-feu personnalisées."
+
+msgid "to add custom rules edit the file"
+msgstr "pour ajouter des règles personnalisées éditez le fichier"
+
+msgid "then run the command"
+msgstr "puis relancez la commande"
+
+msgid "unknown argument"
+msgstr "Argument inconnu"
+
+msgid "at"
+msgstr "à"
+
+msgid "and"
+msgstr "et"
+
+msgid ":"
+msgstr "h"
+
+msgid "or"
+msgstr "ou"
