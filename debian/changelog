@@ -1,4 +1,10 @@
-ctparental (4.01-0) unstable; urgency=medium
+ctparental (4.03-0) unstable; urgency=medium
+  
+  *  correction du bug sur le filtrage par liste blanche qui verrouillait tout.
+    
+ -- Guillaume Marsat <guillaume.marsat@laposte.net>  Mon, 07 Mar 2016 18:06:31 +0100
+ 
+ctparental (4.02-0) unstable; urgency=medium
   
   *  internationalisation de CTparental.sh .
     
