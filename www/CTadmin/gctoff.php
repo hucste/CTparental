@@ -1,13 +1,11 @@
 <?php
-echo "<TABLE width='100%' border=0 cellspacing=0 cellpadding=0>";
-echo "<tr><th>".gettext('privileged group')."</th></tr>";
-echo "<tr bgcolor='#FFCC66'><td><img src='/images/pix.gif' width='1' height='2'></td></tr>";
-echo "</table>";
 echo "<table width='100%' border=1 cellspacing=0 cellpadding=1>";
+echo "<CENTER><H3>".gettext('privileged group')."</H3></CENTER>";
+echo "<tr><td colspan=2 align='center'>";
 if ($GCTOFF == "ON")
 	{
 	echo "<CENTER><H3>".gettext('The preferred Group is currently enabled')."</H3></CENTER>";
- 	echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+ 	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=privileged group' method=POST>";
 	echo "<input type=hidden name='choix' value=\"gct_Off\">";
 	echo "<input type=submit value=".gettext('Disable privileged group.').">";
 	echo "</FORM>";
@@ -16,7 +14,7 @@ if ($GCTOFF == "ON")
 	echo "<tr><td colspan=2 align='center'>";
 	echo gettext('Select users who should not undergo screening')."</td></tr>";
 	echo "<tr><td align='center' valign='middle'>";
-	echo "<FORM action='$_SERVER[PHP_SELF]' method='POST'>";
+	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=privileged group' method='POST'>";
 	echo "<table cellspacing=2 cellpadding=2 border=1>";
 	echo "<tr><th>".gettext('Username')."<th></tr>";
 	// Read the "CTOFF.conf" file
@@ -49,7 +47,7 @@ if ($GCTOFF == "ON")
 else
 	{
 	echo "<CENTER><H3> ".gettext('The preferred Group is currently disabled')."</H3></CENTER>";
- 	echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+ 	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=privileged group' method=POST>";
 	echo "<input type=hidden name='choix' value=\"gct_On\">";
 	echo "<input type=submit value=".gettext('Enable privileged group.').">";
 	echo "</FORM>";

@@ -141,7 +141,7 @@ NWMANAGERstop=${NWMANAGERstop:="$CMDSERVICE network-manager stop"}
 NWMANAGERstart=${NWMANAGERstart:="$CMDSERVICE network-manager start"}
 NWMANAGERrestart=${NWMANAGERrestart:="$CMDSERVICE network-manager restart"}
 IPTABLESsave=${IPTABLESsave:="$CMDSERVICE iptables-persistent save"}
-DANSGOUARDIANrestart=${DANSGOUARDIANrestart:="$CMDSERVICE e2guardian restart"}
+E2GUARDIANrestart=${E2GUARDIANrestart:="$CMDSERVICE e2guardian restart"}
 PRIVOXYrestart=${PRIVOXYrestart:="$CMDSERVICE privoxy restart"}
 #### LOCALISATION du fichier PID lighttpd par default ####
 LIGHTTPpidfile=${LIGHTTPpidfile:="/var/run/lighttpd.pid"}
@@ -161,8 +161,9 @@ ENIPTABLESSAVE=${ENIPTABLESSAVE:=""}
 UIDMINUSER=${UIDMINUSER:=1000}
 
 FILESYSCTL=${FILESYSCTL:="/etc/sysctl.conf"}
-FILEConfe2gu=${FILEConfe2gu:="/etc/e2guardian/e2guardian.conf"}
-FILEConfe2guf1=${FILEConfe2guf1:="/etc/e2guardian/e2guardianf1.conf"}
+DIRE2G=${DIRE2G:="/etc/e2guardian/"}
+FILEConfe2gu=${FILEConfe2gu:=$DIRE2G"e2guardian.conf"}
+FILEConfe2guf1=${FILEConfe2guf1:=$DIRE2G"e2guardianf1.conf"}
 DNSMASQCONF=${DNSMASQCONF:="/etc/dnsmasq.conf"}
 MAINCONFHTTPD=${MAINCONFHTTPD:="/etc/lighttpd/lighttpd.conf"}
 DIRCONFENABLEDHTTPD=${DIRCONFENABLEDHTTPD:="/etc/lighttpd/conf-enabled"}
@@ -334,12 +335,12 @@ $(gettext "#the domain filtering is handled by dnsmasq, do not touch this file !
 
 EOF
 
-$DANSGOUARDIANrestart
+$E2GUARDIANrestart
 cp -f /usr/local/share/CTparental/e2guardian_conf/template.html /usr/share/e2guardian/languages/ukenglish/
 cp -f /usr/local/share/CTparental/e2guardian_conf/template-fr.html /usr/share/e2guardian/languages/french/template.html
 sed -i "s/é/\&eacute;/g" /usr/share/e2guardian/languages/french/messages
 sed -i "s/è/\&egrave;/g" /usr/share/e2guardian/languages/french/messages
-$DANSGOUARDIANrestart
+$E2GUARDIANrestart
 echo "</confe2guardian>"
 }
 confprivoxy () {
@@ -614,7 +615,7 @@ catChoice() {
      	 fi     
       done
       cp $DIR_DNS_FILTER_AVAILABLE/ossi.conf $DIR_DNS_BLACKLIST_ENABLED/
-   echo "</catChoice>"
+      echo "</catChoice>"
       reabdomaine
 }
 
@@ -624,7 +625,6 @@ date +%H:%M:%S
 $MFILEtmp
 if [ ! -f $DREAB ] ; then
 cat << EOF > $DREAB
-
 EOF
 fi
 if [ ! -f $DIR_DNS_BLACKLIST_ENABLED/ossi.conf ] ; then
@@ -719,7 +719,7 @@ server=$DNS2
 EOF
 
 resolvconffixon # redemare dnsmasq en prenent en compte la présence ou non de resolvconf.
-$DANSGOUARDIANrestart
+$E2GUARDIANrestart
 $PRIVOXYrestart
 else
   dnsmasqwhitelistonly
@@ -728,9 +728,9 @@ echo "</dnsmasqon>"
 }
 dnsmasqoff () {
 echo "<dnsmasqoff>"
-   $SED "s?^DNSMASQ.*?DNSMASQ=OFF?g" $FILE_CONF
-   resolvconffixoff
-   $DANSGOUARDIANrestart
+$SED "s?^DNSMASQ.*?DNSMASQ=OFF?g" $FILE_CONF
+resolvconffixoff
+$E2GUARDIANrestart
 $PRIVOXYrestart
 echo "</dnsmasqoff>"
 }
@@ -1021,7 +1021,7 @@ address=/#/$PRIVATE_IP #redirige vers $PRIVATE_IP pour tout ce qui n'a pas été
 EOF
 
 $DNSMASQrestart
-$DANSGOUARDIANrestart
+$E2GUARDIANrestart
 $PRIVOXYrestart
 }
 
@@ -1223,6 +1223,12 @@ chmod 660 $DNS_FILTER_OSSI
 chown root:$GROUPHTTPD $CATEGORIES_ENABLED
 chmod 660 $CATEGORIES_ENABLED
 chmod 660 /etc/sudoers
+chown root:$GROUPHTTPD $DIRE2G"lists/bannedextensionlist"
+chmod 664 $DIRE2G"lists/bannedextensionlist"
+chown root:$GROUPHTTPD $DIRE2G"lists/bannedmimetypelist"
+chmod 664 $DIRE2G"lists/bannedmimetypelist"
+chown root:$GROUPHTTPD $DIRE2G"lists/bannedsitelist"
+chmod 664 $DIRE2G"lists/bannedsitelist"
 
 sudotest=`grep Defaults:$USERHTTPD /etc/sudoers |wc -l`
 if [ $sudotest -ge "1" ] ; then
@@ -1233,9 +1239,9 @@ fi
 
 sudotest=`grep "$USERHTTPD ALL=" /etc/sudoers |wc -l`
 if [ $sudotest -ge "1" ] ; then
-    $SED "s?^$USERHTTPD.*?$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff?g" /etc/sudoers
+    $SED "s?^$USERHTTPD.*?$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff?g" /etc/sudoers
 else
-    echo "$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff" >> /etc/sudoers
+    echo "$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff" >> /etc/sudoers
 fi
 	
 
@@ -1509,7 +1515,7 @@ updatelistgctoff () {
 	for PCUSER in `listeusers`
 	do
 		if [ $(cat $FILE_GCTOFFCONF | sed -e "s/#//g" | grep -c -E "^$PCUSER$") -eq 0 ];then
-			result="1"
+			result="1"	
 			if [ $(groups $PCUSER | grep -c -E "( sudo )|( sudo$)") -eq 1 ];then
 				#si l'utilisateur fait parti du group sudo on l'ajoute sans filtrage par default.
 				echo "$PCUSER" >> $FILE_GCTOFFCONF
@@ -1671,7 +1677,7 @@ while (true); do
 		do   
 		      clear
 		      echo $(gettext "You want to enable this category:")
-		      echo -n "$CATEGORIE  O/N :"
+		      echo -n " $CATEGORIE  O/N :"
 		      while (true); do
 			 read choi
 			 case $choi in
@@ -1688,12 +1694,12 @@ while (true); do
          break
          ;;
          W | w )
-        echo $(gettext "Choice of unfiltered categories.")
+               echo $(gettext "Choice of unfiltered categories.")
 		for CATEGORIE in `cat  $WL_CATEGORIES_AVAILABLE`  # pour chaque catégorie
 		do   
 		      clear
 		      echo $(gettext "You want to enable this category:")
-		      echo -n "$CATEGORIE  O/N :"
+		      echo -n " $CATEGORIE  O/N :"
 		      while (true); do
 			 read choi
 			 case $choi in
@@ -1886,7 +1892,7 @@ requiredpamtime
          while (true); do
             read choi
             input=$choi
-            choi=$(echo $choi | sed -e "s/h//g" | sed -e "s/ //g" | sed -e "s/a/-/g" | sed -e "s/et/:/g" ) # mise en forme de la variable choi pour pam   
+            choi=$(echo $choi | sed -e "s/$h//g" | sed -e "s/ //g" | sed -e "s/$at/-/g" | sed -e "s/$and/:/g" ) # mise en forme de la variable choi pour pam   
                if [ $( echo $choi | grep -E -c "^([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]$|^([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]:([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]$" ) -eq 1 ];then
                   int1=$(echo $choi | cut -d ":" -f1 | cut -d "-" -f1)
                   int2=$(echo $choi | cut -d ":" -f1 | cut -d "-" -f2)
@@ -2331,7 +2337,11 @@ case $arg1 in
 		  unset test
 	  fi
 	  exit 0
-      ;;       
+      ;;  
+    -dgreload)
+      $E2GUARDIANrestart     
+      exit 0
+      ;;  
       
    *)
       echo "$(gettext "unknown argument"):$1";

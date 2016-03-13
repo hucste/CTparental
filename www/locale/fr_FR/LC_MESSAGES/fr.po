@@ -379,3 +379,21 @@ msgstr "Contactez votre responsable informatique (RSSI/OSSI), si vous pensez que
 
 msgid "Filtered by "
 msgstr "Filtré par "
+
+msgid "extensions has filtered"
+msgstr "extensions a filtré"
+
+msgid "mimetype has filtered"
+msgstr "type MIME a filtré"
+
+msgid "web filtering"
+msgstr "filtrage web"
+
+msgid "Select the extensions has filtered"
+msgstr "Sélectionnez les extensions a filtrées"
+
+msgid "Select the mimetype has filtered"
+msgstr "Sélectionnez le type MIME a filtré"
+
+msgid "E2guardian configuration"
+msgstr "Configuration de E2guardian"

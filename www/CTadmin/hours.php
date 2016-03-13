@@ -1,15 +1,13 @@
 
 <?php
-echo "<TABLE width='100%' border=0 cellspacing=0 cellpadding=0>";
-echo "<tr><th>".gettext('Hours of allowed connections')."</th></tr>";
-echo "<tr bgcolor='#FFCC66'><td><img src='/images/pix.gif' width=1 height=2></td></tr>";
-echo "</TABLE>";
-echo "<TABLE width='100%' border=1 cellspacing=0 cellpadding=0>";
-echo "<tr><td valign='middle' align='left'>";
+echo "<table width='100%' border=1 cellspacing=0 cellpadding=1>";
+echo "<CENTER><H3>".gettext('Hours of allowed connections')."</H3></CENTER>";
+echo "<tr><td colspan=2 align='center'>";
+
 if ($HOURSCONNECT == "ON")
 	{
 	echo "<CENTER><H3>".gettext('Connection schedules are currently enabled')."</H3></CENTER>";
- 	echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+ 	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=Hours of allowed connections' method=POST>";
 	echo "<input type=hidden name='choix' value=\"H_Off\">";
 	echo "<input type=submit value=".gettext('Disable logon hours').">";
 	echo "</FORM>";
@@ -20,7 +18,7 @@ if ($HOURSCONNECT == "ON")
 	### on lit est on interprète le fichier CTparental.conf
 	echo "<TABLE width='100%' border=0 cellspacing=0 cellpadding=0>";
 	exec ("/usr/local/bin/CTparental.sh -listusers 2> /dev/null",$USERSPC); # récupération des utilisateurs du poste.(UID >= 1000)
-	echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=Hours of allowed connections' method=POST>";
 		echo "<select name=\"selectuser\">";
 		if (isset($selectuser)){echo "<option value=\"$selectuser\">$selectuser\n"; }
 			else {echo "<option value=\"\">\n"; }
@@ -31,7 +29,7 @@ if ($HOURSCONNECT == "ON")
 	if (isset($selectuser)) {
 		echo "</TABLE>";
 		echo "<TABLE width='600' border=0 cellspacing=0 cellpadding=0>";
-		echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+		echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=Hours of allowed connections' method=POST>";
 		echo "<CENTER><H3>".gettext("the selected user is: ")." $selectuser</H3></CENTER>";
 		
 		if (is_file ($hconf_file))
@@ -99,7 +97,7 @@ if ($HOURSCONNECT == "ON")
 else
 	{
 	echo "<CENTER><H3>".gettext('Connection schedules are currently disabled')."</H3></CENTER>";
- 	echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+ 	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=Hours of allowed connections' method=POST>";
 	echo "<input type=hidden name='choix' value=\"H_On\">";
 	echo "<input type=submit value=".gettext('Enable logon hours').">";
 	echo "</FORM>";

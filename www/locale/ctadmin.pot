@@ -244,6 +244,18 @@ msgid "If you have any queries contact your ICT Co-ordinator or Network Manager.
 msgstr ""
 msgid "Filtered by "	
 msgstr ""
+msgid "extensions has filtered"
+msgstr ""
+msgid "mimetype has filtered"
+msgstr ""
+msgid "web filtering"
+msgstr ""
+msgid "Select the extensions has filtered"
+msgstr ""
+msgid "Select the mimetype has filtered"
+msgstr ""
+msgid "E2guardian configuration"
+msgstr ""
 
 
 

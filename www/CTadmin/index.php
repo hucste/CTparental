@@ -7,15 +7,7 @@
 </HEAD>
 <body>
 <?php
-function form_filter ($form_content)
-{
-// réencodage iso + format unix + rc fin de ligne (ouf...)
-	$list = str_replace("\r\n", "\n", utf8_decode($form_content));
-	if (strlen($list) != 0){
-		if ($list[strlen($list)-1] != "\n") { $list[strlen($list)]="\n";} ;} ;
-	return $list;
-}
-# on détecte la langue system
+// on détecte la langue system
 $LANG=getenv('LANG'); 
 if(isset($LANG)) {
 $tab=explode(".",getenv('LANG'));
@@ -35,6 +27,14 @@ textdomain($domain);
 // La traduction est cherché dans ./locale/fr_FR/LC_MESSAGES/fr.mo
 }
 
+function form_filter ($form_content)
+{
+// réencodage iso + format unix + rc fin de ligne (ouf...)
+	$list = str_replace("\r\n", "\n", utf8_decode($form_content));
+	if (strlen($list) != 0){
+		if ($list[strlen($list)-1] != "\n") { $list[strlen($list)]="\n";} ;} ;
+	return $list;
+}
 $week = array( gettext("monday"),gettext("tuesday"),gettext("wednesday"),gettext("thursday"),gettext("friday"),gettext("saturday"),gettext("sunday"));
 $weeknum = array( 0,1,2,3,4,5,6);
 $bl_categories="/usr/local/etc/CTparental/bl-categories-available";
@@ -44,12 +44,75 @@ $conf_ctoff_file="/usr/local/etc/CTparental/GCToff.conf";
 $hconf_file="/usr/local/etc/CTparental/CThours.conf";
 $wl_domains="/usr/local/etc/CTparental/domaine-rehabiliter";
 $bl_domains="/usr/local/etc/CTparental/blacklist-local";
-# default values
 
 
+if (isset($_GET['dgfile'])){ $dg_confswitch=$_GET['dgfile']; } 
+		else {
+				if ($DNSMASQ <> "OFF"){$dg_confswitch='Blacklist filtering';}
+				else {$dg_confswitch='Hours of allowed connections';}
+			
+			}
+	
+	switch ($dg_confswitch)
+{
+	case 'extensions has filtered' :
+		 $dg_file_edit="/etc/e2guardian/lists/bannedextensionlist";
+		break;
+	case 'mimetype has filtered' :
+		 $dg_file_edit="/etc/e2guardian/lists/bannedmimetypelist";
+		break;
+	case '*ip **ips ...' :
+		 $dg_file_edit="/etc/e2guardian/lists/bannedsitelist";
+		break;
+	case 'WhiteList Filtering' :
+		$bl_categories="/usr/local/etc/CTparental/wl-categories-available";
+		break;
+	case 'Blacklist filtering' :
+		$bl_categories="/usr/local/etc/CTparental/bl-categories-available";
+		break;
+
+		
+
+}	
+
+# traitement du formulaire
 if (isset($_POST['choix'])){ $choix=$_POST['choix']; } else { $choix=""; }
 switch ($choix)
 {
+	
+case 'change_file1' :
+	$tab=file($dg_file_edit);
+	if ($tab)
+		{
+		$pointeur=fopen($dg_file_edit,"w+");
+		$numline=1;
+		foreach ($tab as $ligne)
+			{
+			$line=$ligne ;
+			if (trim($ligne) != '') # the line isn't empty
+			{
+				$ext_lignes=explode(" ", $line);
+				
+				if ($_POST['chk-'.$numline] == "on" )
+				{
+					if(preg_match('/^#/',$ligne)) {
+						$line=substr($ligne,1);
+					}
+				}
+				else { 				
+						if(!preg_match('/^#/',$ligne)) {
+							$line="#".$ligne;			
+						}
+				}
+				//echo $line."<br>";
+				fwrite($pointeur,$line);
+		    }	
+		    $numline=$numline+1;			
+			}
+		fclose($pointeur);
+		}
+	exec ("sudo -u root /usr/local/bin/CTparental.sh -dgreload");
+	break;
 case 'gct_Off' :
 	exec ("sudo -u root /usr/local/bin/CTparental.sh -gctoff");
 	break;
@@ -243,21 +306,8 @@ $tab=file($conf_ctoff_file);
 		}
 	exec ("sudo -u root /usr/local/bin/CTparental.sh -gctalist");
 	break;
-
 }
 
-echo "<TABLE width='100%' border=0 cellspacing=0 cellpadding=0>";
-echo "<tr><th>".gettext('Domain names filtering')."</th></tr>";
-echo "<tr bgcolor='#FFCC66'><td><img src='/images/pix.gif' width=1 height=2></td></tr>";
-echo "</TABLE>";
-echo "<TABLE width='100%' border=1 cellspacing=0 cellpadding=0>";
-echo "<tr><td valign='middle' align='left'>";
-echo "<CENTER>";
-echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
-echo "<input type=hidden name='choix' value=\"LogOFF\">";
-echo "<input type=submit value=".gettext('Logout').">";
-echo "</FORM>";
-echo "</CENTER>";
 if (is_file ($conf_file))
 	{
 	$tab=file($conf_file);
@@ -276,13 +326,88 @@ if (is_file ($conf_file))
 	}
 else { echo gettext('Error opening the file')." ".$conf_file;}
 
-include 'dns.php';
 
-include 'hours.php';
 
-include 'gctoff.php';
+echo "<TABLE width='100%' border=0 cellspacing=0 cellpadding=0>";
+echo "<tr><th>".gettext('web filtering')."</th></tr>";
+echo "<tr bgcolor='#FFCC66'><td><img src='/images/pix.gif' width='1' height='2'></td></tr>";
+echo "</table>";
+echo "<table width='100%' border=1 cellspacing=0 cellpadding=1>";
+echo "<tr><td valign='middle' align='left'>";
+echo "<div align='right'>";
+echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+echo "<input type=hidden name='choix' value=\"LogOFF\">";
+echo "<input type=submit value=".gettext('Logout').">";
+echo "</FORM>";
+echo "</div> ";
 
-//echo "</td></tr>";
+echo "<table width='100%' border=1 cellspacing=0 cellpadding=1>";
+
+echo "<tr valign=top>";
+
+if ($DNSMASQ <> "OFF")
+	{
+	echo "<CENTER><H3> ".gettext('Actually, the Domain name filter is on')." </H3>";
+ 	echo "<FORM action='$_SERVER[PHP_SELF]?dgfile=Hours of allowed connections' method=POST>";
+	echo "<input type=hidden name='choix' value=\"BL_Off\">";
+	echo "<input type=submit value=".gettext('Switch the Filter off').">";
+	echo "</FORM></CENTER><br>";	
+	echo "<td align=center"; if ( $dg_confswitch == 'Blacklist filtering' ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=Blacklist filtering\" title=\"\"><font color=\"black\"><b>".gettext('Blacklist filtering')."</b></font></a></td>";
+	echo "<td align=center"; if ( $dg_confswitch == 'WhiteList Filtering' ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=WhiteList Filtering\" title=\"\"><font color=\"black\"><b>".gettext('WhiteList Filtering')."</b></font></a></td>";
+	echo "<td align=center"; if ( 'extensions has filtered' == $dg_confswitch ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=extensions has filtered\" title=\"\"><font color=\"black\"><b>".gettext('extensions has filtered')."</b></font></a></td>";
+	echo "<td align=center"; if ( 'mimetype has filtered' == $dg_confswitch   ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=mimetype has filtered\" title=\"\"><font color=\"black\"><b>".gettext('mimetype has filtered')."</b></font></a></td>";
+	echo "<td align=center"; if ( '*ip **ips ...' == $dg_confswitch ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=*ip **ips ...\" title=\"\"><font color=\"black\"><b>".gettext('*ip **ips ...')."</b></font></a></td>";
+	echo "<td align=center"; if ( $dg_confswitch == 'privileged group' ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=privileged group\" title=\"\"><font color=\"black\"><b>".gettext('privileged group')."</b></font></a></td>";
+	
+	}
+else
+	{
+	echo "<CENTER><H3>".gettext('Actually, the Domain name filter is off')."</H3>";
+ 	echo "<FORM action='$_SERVER[PHP_SELF]' method=POST>";
+	echo "<input type=hidden name='choix' value=\"BL_On\">";
+	echo "<input type=submit value=".gettext('Switch the Filter on').">";
+	echo "</FORM></CENTER><br>";
+	}
+	echo "<td align=center"; if ( $dg_confswitch == 'Hours of allowed connections' ) { echo " bgcolor=\"#FFCC66\"";} echo ">";
+	echo "<a href=\"$_SERVER[PHP_SELF]?dgfile=Hours of allowed connections\" title=\"\"><font color=\"black\"><b>".gettext('Hours of allowed connections')."</b></font></a></td>";
+
+	echo "</tr>";
+	echo" </table>";
+	echo "</td></tr>";
+
+
+# Lecture du formulaire
+switch ($dg_confswitch)
+{
+	case 'Blacklist filtering' :
+		include 'bl_dns.php';
+		break;
+	case 'WhiteList Filtering' :
+		include 'wl_dns.php';
+		break;
+	case 'extensions has filtered' :
+		 include 'dg_extensions.php';
+	  	break;
+	case 'mimetype has filtered' :
+		 include 'dg_mimetype.php';
+		break;
+	case '*ip **ips ...' :
+		 include 'dg_sitelist.php';
+		break;
+	case 'privileged group' :
+		include 'gctoff.php';
+		break;
+	case 'Hours of allowed connections' :
+		include 'hours.php';
+	break;
+		
+	
+}
+
 ?>
-</BODY>
-</HTML>
