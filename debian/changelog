@@ -1,3 +1,10 @@
+ctparental (4.04-0) unstable; urgency=medium
+  
+  *  modification interface web en ajoutant, la gestion des extentions , des mimetype bannies et 
+  quelque autre option de e2guardian...
+    
+ -- Guillaume Marsat <guillaume.marsat@laposte.net>  Sun, 13 Mar 2016 11:15:21 +0100
+ 
 ctparental (4.03-0) unstable; urgency=medium
   
   *  correction du bug sur le filtrage par liste blanche qui verrouillait tout.
