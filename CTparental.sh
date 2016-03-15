@@ -1293,8 +1293,8 @@ PTNlogin='^[a-zA-Z0-9]*$'
 while (true)
 do
 loginhttp=$(whiptail --title "$(gettext "Login")" --nocancel --inputbox "$(gettext "Enter login to the administration interface") 
-$(gettext "- Only letters or numbers.")
-$(gettext "- 6 characters minimum:")" 10 60 3>&1 1>&2 2>&3)			
+$(gettext "	- Only letters or numbers.")
+$(gettext "	- 6 characters minimum:")" 10 60 3>&1 1>&2 2>&3)			
 	if [ $(expr $loginhttp : $PTNlogin) -gt 6  ];then 
 		break
 	fi	
@@ -2097,6 +2097,82 @@ $SED "s?^HOURSCONNECT.*?HOURSCONNECT=ON?g" $FILE_CONF
 $CRONrestart
 }
 
+confgrub2() {
+PTNlogin='^[a-zA-Z]*$'
+## on passe en keymap us pour le password comme sa quelque soit votre clavier le mot de passe correspond bien au touche fraper.
+## on a donc plus besoins de ce prendre la tète pour le clavier avec le mot de pass grub.
+setxkbmap us
+clear
+echo $(gettext "keymap is in qwerty us in grub menu.")
+echo $(gettext "	- Only letters or numbers.")
+echo $(gettext "	- 4 characters minimum.") 
+echo -n $(gettext "Enter login to the superuser of grub2 :")
+while (true); do
+	read logingrub
+	if [ $(expr $logingrub : $PTNlogin) -gt 4  ];then 
+		break
+	else
+		clear
+		echo $(gettext "keymap is in qwerty us in grub menu.")
+		echo $(gettext "	- Only letters or numbers.")
+		echo $(gettext "	- 4 characters minimum.") 
+		echo -n $(gettext "Enter login to the superuser of grub2 :")
+	fi	
+done
+echo > /tmp/passgrub
+
+setxkbmap ${LANG:0:2}
+
+while [ $(awk '{print $NF}' /tmp/passgrub | grep -c grub.) -eq 0 ]
+do
+grub-mkpasswd-pbkdf2 | tee /tmp/passgrub
+done	
+passwordgrub=$(awk '{print $NF}' /tmp/passgrub | grep grub.)
+ # on rebascule sur la keymap system.
+vide=""
+cat << EOF > /etc/grub.d/99_password
+#!/bin/sh
+## ce scripte doit ètre lancer en dernier !!!
+## on réstrent uniquement les menus de configuration uefi ou de recovery mode ###
+## ainssi que tous les submenu.
+## seul les menuentry et submenu de premier niveaux prènnent en compte les parramètres d'acces utilisateurs.
+## ce qui implique que l'ajout de --unrestricted a un submenu et recursive !!
+cat << ${vide}EOF
+set superusers="$logingrub"
+password_pbkdf2 $logingrub $passwordgrub
+${vide}EOF
+
+confunrestricted() {
+		## fonction lancer en tache de fond par la commande
+		## confunrestricted &
+		## elle attend la fin de l'éxecution de tous les scripte update grub 
+		## puis modifis le fichier /boot/grub/grub.cfg pour y ajouter le droits a touts le monde
+		## de lancer tous les entrée grub sauf le setup uefi et les recovery mode.
+		## tout les submenu sont bloquer par defaut 
+		processupdategrub=\$(echo \$(ls -1 /etc/grub.d/ | grep -E "^[0-9][0-9]_") | sed -e "s/ /,/g")
+		while [ \$(ps -C \$processupdategrub -o pid= | wc -l) -gt 2 ]
+		do
+			sleep 0.2
+		done
+		
+		while read linecfg 
+		do
+			if [ \$(echo "\$linecfg" | grep -E "menuentry " | grep -v "uefi-firmware" | grep -c -v "recovery mode" ) -eq 1 ];then
+				line2=\$(echo "\$linecfg" | sed -e 's/ {/ --unrestricted { /g')
+				sed -i "s|\$linecfg|\$line2|" /boot/grub/grub.cfg
+			fi
+		done < /boot/grub/grub.cfg
+	}
+
+confunrestricted &
+	
+EOF
+chmod 755 /etc/grub.d/99_password
+
+update-grub2
+
+
+}
 
 # and func # ne pas effacer cette ligne !!
 
@@ -2164,6 +2240,10 @@ usage="$(gettext "Use"): CTparental.sh    {-i }|{ -u }|{ -dl }|{ -ubl }|{ -rl }|
 -ipton$(gettext "	=> Enable rules of custom firewall.")
 
 -iptoff$(gettext "	=> Disable rules of custom firewall.")
+
+-grubPon$(gettext "	=> Enable the superuser of grub2.")
+
+-grubPoff$(gettext "	=> Disable the superuser of grub2.")
 "
 case $arg1 in
    -\? | -h* | --h*)
@@ -2338,10 +2418,19 @@ case $arg1 in
 	  fi
 	  exit 0
       ;;  
-    -dgreload)
+    -dgreload )
       $E2GUARDIANrestart     
       exit 0
       ;;  
+    -grubPon )
+      confgrub2
+      exit 0
+      ;;  
+    -grubPoff )
+      rm -rf /etc/grub.d/99_password
+      update-grub2
+      exit 0
+      ;;
       
    *)
       echo "$(gettext "unknown argument"):$1";

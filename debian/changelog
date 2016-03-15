@@ -1,3 +1,15 @@
+ctparental (4.05-0) unstable; urgency=medium
+  
+  *  possibilité d'activer le superuser sur grub2 avec la commande CTparental.sh -grubPon
+  le mot de pass ne sera pas demander pour démarer windows ou le dernier noyaux debian/ubuntu,
+  par contre pour le setup uefi , les "recovery mode" ou l'édition de grub oui.  
+  peut ètre désactiver par la commande CTparental.sh -grubPoff.
+  pour cette commande la kemap et passer en us car grub et en us et peut pas ètre changer de manière propre.
+  il et donc plus simple de basculer dans cette keymap au momment de la saisi pour évité les problêmes de éàè.. 
+  si jamais on devrai booter en "recovery mode" plus tard.
+    
+ -- Guillaume Marsat <guillaume.marsat@laposte.net>  Tue, 15 Mar 2016 21:05:28 +0100
+ 
 ctparental (4.04-0) unstable; urgency=medium
   
   *  modification interface web en ajoutant, la gestion des extentions , des mimetype bannies et 
