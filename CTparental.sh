@@ -19,14 +19,15 @@ export TEXTDOMAIN=${LANG:0:2}
 
 arg1=${1}
 if [ $# -ge 1 ];then
-	if [ $arg1 != "-listusers" ] ; then
+	if [ "$arg1" != "-listusers" ] ; then
 		if [ ! $UID -le 499 ]; then # considère comme root tous les utilisateurs avec un uid inferieur ou egale a 499,ce qui permet à apt-get,urpmi,yum... de lancer le script sans erreur.
-		   echo $(gettext "It root of the need to run this script.")
+		   gettext 'It root of the need to run this script.'
+		   echo ""
 		   exit 1
 		fi
 	fi
 fi
-if  [ $(groups $(whoami) | grep -c -E "( ctoff$)|( ctoff )") -eq 0 ];then
+if  [ "$(groups "$(whoami)" | grep -c -E "( ctoff$)|( ctoff )")" -eq 0 ];then
   export https_proxy=http://127.0.0.1:8080
   export HTTPS_PROXY=http://127.0.0.1:8080
   export http_proxy=http://127.0.0.1:8080
@@ -40,7 +41,7 @@ fi
 
 noinstalldep="0"
 nomanuel="0"
-ARGS=($*)
+ARGS=("$*")
 for (( narg=1; narg<=$#; narg++ )) ; do
         case "${ARGS[$narg]}" in
 	  -nodep )
@@ -50,10 +51,10 @@ for (( narg=1; narg<=$#; narg++ )) ; do
 	     nomanuel="1"
 	  ;;
 	  -dirhtml )
-	     narg=$(( $narg +1 ))
+	     narg=$(( "$narg" +1 ))
 	     DIRhtmlPersonaliser=${ARGS[$narg]}
-	     if [ ! -d $DIRhtmlPersonaliser ];then
-		echo $(gettext "Invalid directory path!")
+	     if [ ! -d "$DIRhtmlPersonaliser" ];then
+		gettext 'Invalid directory path!'
 		exit 0
 	     fi
 	  ;;
@@ -92,7 +93,7 @@ IPRULES=OFF
 EOF
 
 fi
-FILTRAGEISOFF=$(cat $FILE_CONF | grep -c DNSMASQ=OFF)
+FILTRAGEISOFF=$(cat < $FILE_CONF | grep -c DNSMASQ=OFF)
 
 
 
@@ -108,7 +109,7 @@ mkdir $tempDIRRamfs
 fi
 RougeD="\033[1;31m"
 BleuD="\033[1;36m"
-VertD="\033[1;32m"
+#VertD="\033[1;32m"
 Fcolor="\033[0m"
 COMMONFILEGS="common-auth"
 GESTIONNAIREDESESSIONS=" login gdm lightdm slim kdm xdm lxdm gdm3 "
@@ -186,7 +187,7 @@ XSESSIONFILE=${XSESSIONFILE:="/etc/X11/Xsession"}
 REPCAMOZ=${REPCAMOZ:="/usr/share/ca-certificates/mozilla/"}
 DOMAINEDEPOTS=${DOMAINEDEPOTS:=$(cat /etc/apt/sources.list /etc/apt/sources.list.d/* | grep "^deb" | cut -d"/" -f3 | sort -u | sed -e "s/^www././g")}
 
-if [ $(yum help 2> /dev/null | wc -l ) -ge 50 ] ; then
+if [ "$(yum help 2> /dev/null | wc -l )" -ge 50 ] ; then
    ## "Distribution basée sur yum exemple redhat, fedora..."
    CMDINSTALL=${CMDINSTALL:="yum install "}
    CMDREMOVE=${CMDREMOVE:="rpm -e "}
@@ -204,20 +205,24 @@ if [ $? -eq 0 ] ; then
    CMDREMOVE=${CMDREMOVE:="dpkg --purge  "}
 fi
 
-if [ $( echo $CMDINSTALL | wc -m ) -eq 1 ] ; then
-   echo $(gettext "No known package manager, was detected.")
+if [ -z "$CMDINSTALL" ] ; then
+   gettext 'No known package manager, was detected.'
    set -e
    exit 1
 fi
 if [ $UID -le 499 ]; then
-	interface_WAN=$(ip route | awk '/^default via/{print $5}' | sort -u ) 
-	ipbox=$(ip route | awk '/^default via/{print $3}' | sort -u )   # suppose que la passerelle est la route par défaut
-	ipinterface_WAN=$(ifconfig $interface_WAN | awk '/adr:/{print $2}' | cut -d":" -f2)
-	reseau_box=$(ip route | grep / | grep "$interface_WAN" | cut -d" " -f1 )
-	ip_broadcast=$(ifconfig $interface_WAN | awk '/Bcast:/{print $3}' | cut -d":" -f2)
-
-	DNS1=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f1)
-	DNS2=$(cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f2)
+interface_WAN=$(ip route | awk '/^default via/{print $5}' | sort -u ) 
+export interface_WAN
+ipbox=$(ip route | awk '/^default via/{print $3}' | sort -u )   
+export ipbox
+ipinterface_WAN=$(ifconfig "$interface_WAN" | awk '/adr:/{print $2}' | cut -d":" -f2)
+export ipinterface_WAN
+reseau_box=$(ip route | grep / | grep "$interface_WAN" | cut -d" " -f1 )
+export reseau_box
+ip_broadcast=$(ifconfig "$interface_WAN" | awk '/Bcast:/{print $3}' | cut -d":" -f2)
+export ip_broadcast
+DNS1=$(cat < /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f1)
+DNS2=$(cat < /etc/resolv.conf | grep ^nameserver | cut -d " " -f2 | tr "\n" " " | cut -d " " -f2)
 fi
 resolvconffixon () {
 echo "<resolvconffixon>"
@@ -228,7 +233,7 @@ resolvconf -u 2&> /dev/null
 if [ $? -eq 1 ];then # si resolvconf et bien installé
 resolvconf -u
 # on s'assure que les dns du FAI soit bien ajoutés au fichier /etc/resolv.conf malgré l'utilisation de dnsmasq.
-cat /etc/resolv.conf | grep ^nameserver | sort -u > /etc/resolvconf/resolv.conf.d/tail
+cat < /etc/resolv.conf | grep ^nameserver | sort -u > /etc/resolvconf/resolv.conf.d/tail
 fi
 $DNSMASQstart
 echo "</resolvconffixon>"
@@ -250,7 +255,7 @@ PRIVATE_IP="127.0.0.10"
 FILE_tmp=${FILE_tmp:="$tempDIRRamfs/filetmp.txt"}
 FILE_tmpSizeMax=${FILE_tmpSizeMax:="128M"}  # 70 Min, Recomend 128M 
 LOWRAM=${LOWRAM:=0}
-if [ $LOWRAM -eq 0 ] ; then
+if [ "$LOWRAM" -eq 0 ] ; then
 MFILEtmp="mount -t tmpfs -o size=$FILE_tmpSizeMax tmpfs $tempDIRRamfs"
 UMFILEtmp="umount $tempDIRRamfs"
 else
@@ -269,9 +274,9 @@ DIR_DNS_WHITELIST_ENABLED="$DIR_CONF/whitelist-enabled"
 DNS_FILTER_OSSI="$DIR_CONF/blacklist-local"
 DREAB="$DIR_CONF/domaine-rehabiliter" 
 E2GUXSITELIST="/etc/e2guardian/lists/exceptionsitelist"
-THISDAYS=$(expr $(date +%Y) \* 365 + $(date +%j))
+THISDAYS=$(( $(date +%Y) * 365 + $(date +%j) ))
 MAXDAYSFORUPDATE="7" # update tous les 7 jours
-CHEMINCTPARENTLE=$(readlink -f $0)
+CHEMINCTPARENTLE="$(readlink -f "$0")"
 
 initblenabled () {
    cat << EOF > $CATEGORIES_ENABLED
@@ -301,14 +306,14 @@ confe2guardian () {
   # replace the default deny HTML page
  
   echo "<confe2guardian>"
-  $SED "s?^loglevel =.*?loglevel = 0?g" $FILEConfe2gu   
-  $SED "s?^languagedir =.*?languagedir = '/usr/share/e2guardian/languages'?g" $FILEConfe2gu  
-  $SED "s?^language =.*?language = 'french'?g" $FILEConfe2gu  
-  $SED "s?^logexceptionhits =.*?logexceptionhits = 0?g" $FILEConfe2gu 
-  $SED "s?^filterip =.*?filterip = 127.0.0.1?g" $FILEConfe2gu
-  $SED "s?^proxyip =.*?proxyip = 127.0.0.1?g" $FILEConfe2gu  
-  $SED "s?^filterports =.*?filterports = $E2GUport?g" $FILEConfe2gu 
-  $SED "s?^proxyport =.*?proxyport = $PROXYport?g" $FILEConfe2gu 
+  $SED "s?^loglevel =.*?loglevel = 0?g" "$FILEConfe2gu"
+  $SED "s?^languagedir =.*?languagedir = '/usr/share/e2guardian/languages'?g" "$FILEConfe2gu"
+  $SED "s?^language =.*?language = 'french'?g" "$FILEConfe2gu"
+  $SED "s?^logexceptionhits =.*?logexceptionhits = 0?g" "$FILEConfe2gu"
+  $SED "s?^filterip =.*?filterip = 127.0.0.1?g" "$FILEConfe2gu"
+  $SED "s?^proxyip =.*?proxyip = 127.0.0.1?g" "$FILEConfe2gu"
+  $SED "s?^filterports =.*?filterports = $E2GUport?g" "$FILEConfe2gu"
+  $SED "s?^proxyport =.*?proxyport = $PROXYport?g" "$FILEConfe2gu"
   #$SED "s?.*UNCONFIGURED.*?#UNCONFIGURED?g" $FILEConfe2gu
 cat << EOF > /etc/e2guardian/lists/bannedsitelist
 #Blanket Block.  To block all sites except those in the
@@ -343,107 +348,111 @@ sed -i "s/è/\&egrave;/g" /usr/share/e2guardian/languages/french/messages
 $E2GUARDIANrestart
 echo "</confe2guardian>"
 }
-confprivoxy () {
-echo "<confprivoxy>"
-$SED "s?^debug.*?debug = 0?g"  $PRIVOXYCONF  
-$SED "s?^listen-address.*?listen-address  127.0.0.1:$PROXYport?g"  $PRIVOXYCONF 
 
-	test=$(grep "actionsfile ctparental.action" $PRIVOXYCONF |wc -l)
-	if [ $test -ge "1" ] ; then
-		$SED "s?actionsfile.*ctparental.*?actionsfile ctparental\.action      # ctparental customizations?g" $PRIVOXYCONF
+confprivoxy () {
+	
+echo "<confprivoxy>"
+$SED "s?^debug.*?debug = 0?g"  "$PRIVOXYCONF"
+$SED "s?^listen-address.*?listen-address  127.0.0.1:$PROXYport?g"  "$PRIVOXYCONF"
+
+	test=$(grep -c "actionsfile ctparental.action" "$PRIVOXYCONF" )
+	if [ "$test" -ge "1" ] ; then
+		$SED "s?actionsfile.*ctparental.*?actionsfile ctparental\.action      # ctparental customizations?g" "$PRIVOXYCONF"
 	else
-	    nline=$(grep "actionsfile.*user.action" $PRIVOXYCONF -n | cut -d":" -f1)
-		$SED $nline"i\actionsfile ctparental.action      # ctparental customizations" $PRIVOXYCONF
+	    nline=$(grep "actionsfile.*user.action" "$PRIVOXYCONF" -n | cut -d":" -f1)
+		$SED "$nline""i\actionsfile ctparental.action      # ctparental customizations" "$PRIVOXYCONF"
 	fi
 	unset test
+cat << 'EOF' >  $PRIVOXYCTA
+{{alias}}
++crunch-all-cookies = +crunch-incoming-cookies +crunch-outgoing-cookies
+-crunch-all-cookies = -crunch-incoming-cookies -crunch-outgoing-cookies
+ allow-all-cookies  = -crunch-all-cookies -session-cookies-only -filter{content-cookies}
+ allow-popups       = -filter{all-popups} -filter{unsolicited-popups}
++block-as-image     = +block{Blocked image request.} +handle-as-image
+-block-as-image     = -block
+fragile     = -block -crunch-all-cookies -filter -fast-redirects -hide-referer -prevent-compression
+shop        = -crunch-all-cookies allow-popups
+myfilters   = +filter{html-annoyances} +filter{js-annoyances} +filter{all-popups}\
+              +filter{webbugs} +filter{banners-by-size}
+allow-ads   = -block -filter{banners-by-size} -filter{banners-by-link}
+{ fragile }
+http://127.0.0.10.*
+http://localhost.*
+# BING Add &adlt=strict
+{+redirect{s@$@&adlt=strict@}}
+.bing./.*[&?]q=
+{-redirect}
+.bing./.*&adlt=strict
 
-echo '{{alias}}' > $PRIVOXYCTA
-echo '+crunch-all-cookies = +crunch-incoming-cookies +crunch-outgoing-cookies' >> $PRIVOXYCTA
-echo '-crunch-all-cookies = -crunch-incoming-cookies -crunch-outgoing-cookies' >> $PRIVOXYCTA
-echo ' allow-all-cookies  = -crunch-all-cookies -session-cookies-only -filter{content-cookies}' >> $PRIVOXYCTA
-echo ' allow-popups       = -filter{all-popups} -filter{unsolicited-popups}' >> $PRIVOXYCTA
-echo '+block-as-image     = +block{Blocked image request.} +handle-as-image' >> $PRIVOXYCTA
-echo '-block-as-image     = -block' >> $PRIVOXYCTA
-echo 'fragile     = -block -crunch-all-cookies -filter -fast-redirects -hide-referer -prevent-compression' >> $PRIVOXYCTA
-echo 'shop        = -crunch-all-cookies allow-popups' >> $PRIVOXYCTA
-echo 'myfilters   = +filter{html-annoyances} +filter{js-annoyances} +filter{all-popups}\' >> $PRIVOXYCTA
-echo '              +filter{webbugs} +filter{banners-by-size}' >> $PRIVOXYCTA
-echo 'allow-ads   = -block -filter{banners-by-size} -filter{banners-by-link}' >> $PRIVOXYCTA
-echo '{ fragile }' >> $PRIVOXYCTA
-echo 'http://127.0.0.10.*' >> $PRIVOXYCTA
-echo 'http://localhost.*' >> $PRIVOXYCTA
-echo '# BING Add &adlt=strict' >> $PRIVOXYCTA
-echo '{+redirect{s@$@&adlt=strict@}}' >> $PRIVOXYCTA
-echo '.bing./.*[&?]q=' >> $PRIVOXYCTA
-echo '{-redirect}' >> $PRIVOXYCTA
-echo '.bing./.*&adlt=strict' >> $PRIVOXYCTA
-echo >> $PRIVOXYCTA
-echo '# dailymotion.com ' >> $PRIVOXYCTA
-echo '# remplace http://www.dailymotion.com/family_filter?enable=false....' >> $PRIVOXYCTA
-echo '# par http://www.dailymotion.com/family_filter?enable=true...' >> $PRIVOXYCTA
-echo '{+redirect{s@enable=[^&]+@enable=true@}}' >> $PRIVOXYCTA
-echo ' .dailymotion.*/.*enable=(?!true)' >> $PRIVOXYCTA
-
+# dailymotion.com 
+# remplace http://www.dailymotion.com/family_filter?enable=false....
+# par http://www.dailymotion.com/family_filter?enable=true...
+{+redirect{s@enable=[^&]+@enable=true@}}
+ .dailymotion.*/.*enable=(?!true)
+              
+EOF
 
 $PRIVOXYrestart
 setproxy
 echo "</confprivoxy>"
 }
+
 unsetproxy () {
-for user in `listeusers` ; do	
+for user in $(listeusers) ; do	
 	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [  -f $HOMEPCUSER/.profile ] ; then
-	test=$(grep "^### CTparental ###" $HOMEPCUSER/.profile |wc -l)
-		if [ $test -eq "1" ] ; then	 
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
-		 $SED  2d $HOMEPCUSER/.profile
+	if [  -f "$HOMEPCUSER"/.profile ] ; then
+	test=$(grep -c "^### CTparental ###" "$HOMEPCUSER"/.profile )
+		if [ "$test" -eq "1" ] ; then	 
+		 $SED  2d "$HOMEPCUSER"/.profile
+		 $SED  2d "$HOMEPCUSER"/.profile
+		 $SED  2d "$HOMEPCUSER"/.profile
+		 $SED  2d "$HOMEPCUSER"/.profile
+		 $SED  2d "$HOMEPCUSER"/.profile
+		 $SED  2d "$HOMEPCUSER"/.profile
+		 $SED  2d "$HOMEPCUSER"/.profile
 		fi
 	unset test
 	fi	
 done
-test=$(grep "^### CTparental ###" $XSESSIONFILE |wc -l)
-		if [ $test -eq "1" ] ; then	 
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
-		 $SED  2d $XSESSIONFILE
+test=$(grep -c "^### CTparental ###" "$XSESSIONFILE" )
+		if [ "$test" -eq "1" ] ; then	 
+		 $SED  2d "$XSESSIONFILE"
+		 $SED  2d "$XSESSIONFILE"
+		 $SED  2d "$XSESSIONFILE"
+		 $SED  2d "$XSESSIONFILE"
+		 $SED  2d "$XSESSIONFILE"
+		 $SED  2d "$XSESSIONFILE"
+		 $SED  2d "$XSESSIONFILE"
 		fi
 unset test
 }
 setproxy () {
-if [  -f $XSESSIONFILE ] ; then
-test=$(grep "^### CTparental ###" $XSESSIONFILE |wc -l)
-		if [ $test -eq "0" ] ; then	 
-		 $SED  2"i\### CTparental ###" $XSESSIONFILE
-		 $SED  3'i\if  [ \$(groups \$(whoami) | grep -c -E "( ctoff\$)|( ctoff )") -eq 0 ];then' $XSESSIONFILE
-		 $SED  4"i\  export https_proxy=http://127.0.0.1:$E2GUport" $XSESSIONFILE
-		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$E2GUport" $XSESSIONFILE
-		 $SED  6"i\  export http_proxy=http://127.0.0.1:$E2GUport" $XSESSIONFILE
-		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$E2GUport" $XSESSIONFILE
-		 $SED  8"i\fi" $XSESSIONFILE
+if [  -f "$XSESSIONFILE" ] ; then
+test=$(grep -c "^### CTparental ###" "$XSESSIONFILE" )
+		if [ "$test" -eq "0" ] ; then	 
+		 $SED  2"i\### CTparental ###" "$XSESSIONFILE"
+		 $SED  3"i\if  [ \$(groups \$(whoami) | grep -c -E \"( ctoff\$)|( ctoff )\") -eq 0 ];then" "$XSESSIONFILE"
+		 $SED  4"i\  export https_proxy=http://127.0.0.1:$E2GUport" "$XSESSIONFILE"
+		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$E2GUport" "$XSESSIONFILE"
+		 $SED  6"i\  export http_proxy=http://127.0.0.1:$E2GUport" "$XSESSIONFILE"
+		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$E2GUport" "$XSESSIONFILE"
+		 $SED  8"i\fi" "$XSESSIONFILE"
 		fi
 unset test
 fi
-for user in `listeusers` ; do	
+for user in $(listeusers) ; do	
 	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [  -f $HOMEPCUSER/.profile ] ; then
-	test=$(grep "^### CTparental ###" $HOMEPCUSER/.profile |wc -l)
-		if [ $test -eq "0" ] ; then	 
-		 $SED  2"i\### CTparental ###" $HOMEPCUSER/.profile
-		 $SED  3'i\if  [ \$(groups \$(whoami) | grep -c -E "( ctoff\$)|( ctoff )") -eq 0 ];then' $HOMEPCUSER/.profile
-		 $SED  4"i\  export https_proxy=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  6"i\  export http_proxy=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$DANSGport" $HOMEPCUSER/.profile
-		 $SED  8"i\fi" $HOMEPCUSER/.profile
+	if [  -f "$HOMEPCUSER"/.profile ] ; then
+	test=$(grep -c "^### CTparental ###" "$HOMEPCUSER"/.profile )
+		if [ "$test" -eq "0" ] ; then	 
+		 $SED  2"i\### CTparental ###" "$HOMEPCUSER"/.profile
+		 $SED  3"i\if  [ \$(groups \$(whoami) | grep -c -E \"( ctoff\$)|( ctoff )\") -eq 0 ];then" "$HOMEPCUSER"/.profile
+		 $SED  4"i\  export https_proxy=http://127.0.0.1:$E2GUport" "$HOMEPCUSER"/.profile
+		 $SED  5"i\  export HTTPS_PROXY=http://127.0.0.1:$E2GUport" "$HOMEPCUSER"/.profile
+		 $SED  6"i\  export http_proxy=http://127.0.0.1:$E2GUport" "$HOMEPCUSER"/.profile
+		 $SED  7"i\  export HTTP_PROXY=http://127.0.0.1:$E2GUport" "$HOMEPCUSER"/.profile
+		 $SED  8"i\fi" "$HOMEPCUSER"/.profile
 		fi
 	unset test
 	fi
@@ -452,67 +461,67 @@ done
 }
 
 addadminhttpd() {
-if [ ! -f $PASSWORDFILEHTTPD ] ; then
-    echo -n > $PASSWORDFILEHTTPD   
+if [ ! -f "$PASSWORDFILEHTTPD" ] ; then
+    echo -n > "$PASSWORDFILEHTTPD"  
 fi
 
-chown root:$USERHTTPD $PASSWORDFILEHTTPD
-chmod 640 $PASSWORDFILEHTTPD
+chown root:"$USERHTTPD" "$PASSWORDFILEHTTPD"
+chmod 640 "$PASSWORDFILEHTTPD"
 USERADMINHTTPD=${1}
 pass=${2}
 hash=$(echo -n "$USERADMINHTTPD:$REALMADMINHTTPD:$pass" | md5sum | cut -b -32)
-ligne=$(echo "$USERADMINHTTPD:$REALMADMINHTTPD:$hash")
+ligne=$("$USERADMINHTTPD:$REALMADMINHTTPD:$hash")
 #echo $ligne
-$SED "/.*:$REALMADMINHTTPD.*/d" $PASSWORDFILEHTTPD 
-echo $ligne >> $PASSWORDFILEHTTPD
+$SED "/.*:$REALMADMINHTTPD.*/d" "$PASSWORDFILEHTTPD" 
+echo "$ligne" >> "$PASSWORDFILEHTTPD"
 }
 
 download() {
    rm -rf $tempDIR
    mkdir $tempDIR
    # on attend que la connection remonte suite au redemarage de networkmanager
-   echo $(gettext "Waiting to Connect to Server from Toulouse:")
+   gettext 'Waiting to Connect to Server from Toulouse:'
    i=1
-   while [ $(ping -c 1 $BL_SERVER 2> /dev/null | grep -c "1 received"  ) -eq 0 ]
+   while [ "$(ping -c 1 $BL_SERVER 2> /dev/null | grep -c "1 received"  )" -eq 0 ]
    do
    echo -n .
    sleep 1
-   i=$(($i + 1 ))
+   i=$(( i + 1 ))
    if [ $i -ge 40 ];then # si au bout de 40 secondes on a toujours pas de connection on considaire qu'il y a une erreur
-		echo $(gettext "The connection to the server of Toulouse is impossible.")
+		gettext 'The connection to the server of Toulouse is impossible.'
 		set -e
 		exit 1
    fi
    done
    echo
-   echo $(gettext "connection established:")
+   gettext 'connection established:'
    
    wget -P $tempDIR http://$BL_SERVER/blacklists/download/blacklists.tar.gz 2>&1 | cat
    if [ ! $? -eq 0 ]; then
-      echo $(gettext "error when downloading, interrupted process")
+      gettext 'error when downloading, interrupted process'
       rm -rf $tempDIR
       set -e
       exit 1
    fi
    tar -xzf $tempDIR/blacklists.tar.gz -C $tempDIR
    if [ ! $? -eq 0 ]; then
-      echo $(gettext "archive extraction error , interrupted process")
+      gettext 'archive extraction error , interrupted process'
       set -e
       exit 1
    fi
-   rm -rf $DIR_DNS_FILTER_AVAILABLE/
+   rm -rf ${DIR_DNS_FILTER_AVAILABLE:?}/
    mkdir $DIR_DNS_FILTER_AVAILABLE
 }
 autoupdate() {
-        LASTUPDATEDAY=`grep LASTUPDATE= $FILE_CONF | cut -d"=" -f2`
+        LASTUPDATEDAY=$(grep LASTUPDATE= "$FILE_CONF" | cut -d"=" -f2)
         LASTUPDATEDAY=${LASTUPDATEDAY:=0}
-        DIFFDAY=$(expr $THISDAYS - $LASTUPDATEDAY)
+        DIFFDAY=$(( THISDAYS - LASTUPDATEDAY ))
 	if [ $DIFFDAY -ge $MAXDAYSFORUPDATE ] ; then
 		download
 		adapt
 		catChoice
 		dnsmasqon
-                $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
+                $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=$(date +%d-%m-%Y\ %T)?g" $FILE_CONF
 		exit 0
 	fi
 }
@@ -529,94 +538,88 @@ rm -f /etc/cron.d/CTparental-autoupdate
 $CRONrestart
 }
 adapt() {
-   echo adapt
-   date +%H:%M:%S
-   dnsmasqoff
-   $MFILEtmp
-   if [ ! -f $DNS_FILTER_OSSI ] ; then
-            echo > $DNS_FILTER_OSSI
-   fi
-
-   if [ -d $tempDIR  ] ; then
-	  CATEGORIES_AVAILABLE=$tempDIR/categories_available
-	  ls -FR $tempDIR/blacklists | grep '/$' | sed -e "s/\///g" > $CATEGORIES_AVAILABLE
-          echo -n > $BL_CATEGORIES_AVAILABLE
-          echo -n > $WL_CATEGORIES_AVAILABLE
-          if [ ! -f $DIR_DNS_FILTER_AVAILABLE/ossi.conf ] ; then
+echo adapt
+date +%H:%M:%S
+dnsmasqoff
+$MFILEtmp
+if [ ! -f $DNS_FILTER_OSSI ] ; then
+	echo > $DNS_FILTER_OSSI
+fi
+if [ -d $tempDIR  ] ; then
+	CATEGORIES_AVAILABLE="$tempDIR"/categories_available
+	echo -n > $CATEGORIES_AVAILABLE
+	echo -n > $WL_CATEGORIES_AVAILABLE
+	echo -n > $BL_CATEGORIES_AVAILABLE
+	if [ ! -f $DIR_DNS_FILTER_AVAILABLE/ossi.conf ] ; then
 		echo > $DIR_DNS_FILTER_AVAILABLE/ossi.conf
-	  fi
-	  for categorie in `cat $CATEGORIES_AVAILABLE` # creation des deux fichiers de categories (BL / WL)
-	  do
-		if [ -e $tempDIR/blacklists/$categorie/usage ]
-		then
-			is_whitelist=`grep white $tempDIR/blacklists/$categorie/usage|wc -l`
-		else
-			is_whitelist=0 # ou si le fichier 'usage' n'existe pas, on considère que la catégorie est une BL
+	fi
+	gettext 'blacklist and WhiteList , migration process. Please wait :'" "
+	cd "$tempDIR"/blacklists
+	for categorie in *
+	do
+		if [ -d "$categorie" ] ; then
+			if [ ! -L "$categorie" ] ; then 
+				echo "$categorie" >> $CATEGORIES_AVAILABLE
+				echo -n "."
+				cp -f "$tempDIR"/blacklists/"$categorie"/domains "$FILE_tmp"
+				$SED -r '/([0-9]{1,3}\.){3}[0-9]{1,3}/d' "$FILE_tmp"
+				$SED "/[äâëêïîöôüû]/d" "$FILE_tmp"
+				$SED "/^#.*/d" "$FILE_tmp"
+				$SED "/^$/d" "$FILE_tmp"
+				$SED "s/\.\{2,10\}/\./g" "$FILE_tmp"
+				if [ -e "$tempDIR"/blacklists/"$categorie"/usage ] ; then
+					if [ "$(grep -c "white" "$tempDIR"/blacklists/"$categorie"/usage)" -ge 1 ] ;then
+						echo "$categorie" >> $WL_CATEGORIES_AVAILABLE
+						$SED "s?.*?server=/&/#?g" "$FILE_tmp"  # Mise en forme dnsmasq des listes blanches
+						mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE"/"$DOMAINE".conf
+					else
+						echo "$categorie" >> $BL_CATEGORIES_AVAILABLE
+						$SED "s?.*?address=/&/$PRIVATE_IP?g" "$FILE_tmp"  # Mise en forme dnsmasq des listes noires
+						mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE"/"$DOMAINE".conf  	
+					fi				
+				else
+					echo "$categorie" >> $BL_CATEGORIES_AVAILABLE
+					$SED "s?.*?address=/&/$PRIVATE_IP?g" "$FILE_tmp"  # Mise en forme dnsmasq des listes noires
+					mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE"/"$DOMAINE".conf  	
+				fi
+			fi
 		fi
-		if [ $is_whitelist -eq "0" ]
-		then
-			echo "$categorie" >> $BL_CATEGORIES_AVAILABLE
-		else
-			echo "$categorie" >> $WL_CATEGORIES_AVAILABLE
-		fi
-	   done
-         echo -n $(gettext "blacklist and WhiteList , migration process. Please wait :")" "
-         for DOMAINE in `cat  $CATEGORIES_AVAILABLE`  # pour chaque catégorie
-         do
-            echo -n "."
-              # suppression des @IP, de caractères acccentués et des lignes commentées ou vides
-            cp -f $tempDIR/blacklists/$DOMAINE/domains $FILE_tmp
-            $SED -r '/([0-9]{1,3}\.){3}[0-9]{1,3}/d' $FILE_tmp
-	    $SED "/[äâëêïîöôüû]/d" $FILE_tmp
-	    $SED "/^#.*/d" $FILE_tmp
-            $SED "/^$/d" $FILE_tmp
-            $SED "s/\.\{2,10\}/\./g" $FILE_tmp # supprime les suite de "." exemple: address=/fucking-big-tits..com/127.0.0.10 devient address=/fucking-big-tits.com/127.0.0.10
-	    is_blacklist=`grep $DOMAINE $BL_CATEGORIES_AVAILABLE |wc -l`
-	    if [ $is_blacklist -ge "1" ] ; then
-            	$SED "s?.*?address=/&/$PRIVATE_IP?g" $FILE_tmp  # Mise en forme dnsmasq des listes noires
-		mv $FILE_tmp $DIR_DNS_FILTER_AVAILABLE/$DOMAINE.conf  
-            else
-		$SED "s?.*?server=/&/#?g" $FILE_tmp  # Mise en forme dnsmasq des listes blanches
-		mv $FILE_tmp $DIR_DNS_FILTER_AVAILABLE/$DOMAINE.conf
-            fi
-         done
-   else
-         mkdir   $tempDIR
-         echo -n "."
-			# suppression des @IP, de caractères acccentués et des lignes commentées ou vides
-         cp -f $DNS_FILTER_OSSI $FILE_tmp
-         $SED -r '/([0-9]{1,3}\.){3}[0-9]{1,3}/d' $FILE_tmp
-         $SED "/[äâëêïîöôüû]/d" $FILE_tmp 
-         $SED "/^#.*/d" $FILE_tmp 
-         $SED "/^$/d" $FILE_tmp 
-         $SED "s/\.\{2,10\}/\./g" $FILE_tmp # supprime les suite de "." exemple: address=/fucking-big-tits..com/127.0.0.10 devient address=/fucking-big-tits.com/127.0.0.10
-         $SED "s?.*?address=/&/$PRIVATE_IP?g" $FILE_tmp  # Mise en forme dnsmasq
-         mv $FILE_tmp $DIR_DNS_FILTER_AVAILABLE/ossi.conf
-   fi     
-   echo
-   $UMFILEtmp
-   rm -rf $tempDIR
+	done
+else
+	mkdir   $tempDIR
+	echo -n "."
+	# suppression des @IP, de caractères acccentués et des lignes commentées ou vides
+	cp -f $DNS_FILTER_OSSI "$FILE_tmp"
+	$SED -r '/([0-9]{1,3}\.){3}[0-9]{1,3}/d' "$FILE_tmp"
+	$SED "/[äâëêïîöôüû]/d" "$FILE_tmp" 
+	$SED "/^#.*/d" "$FILE_tmp" 
+	$SED "/^$/d" "$FILE_tmp" 
+	$SED "s/\.\{2,10\}/\./g" "$FILE_tmp" # supprime les suite de "." exemple: address=/fucking-big-tits..com/127.0.0.10 devient address=/fucking-big-tits.com/127.0.0.10
+	$SED "s?.*?address=/&/$PRIVATE_IP?g" "$FILE_tmp"  # Mise en forme dnsmasq
+	mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE"/ossi.conf
+fi     
+echo
+$UMFILEtmp
+rm -rf $tempDIR
 date +%H:%M:%S
 }
 catChoice() {
-   echo "<catChoice>"
-   rm -rf $DIR_DNS_BLACKLIST_ENABLED/
-   mkdir $DIR_DNS_BLACKLIST_ENABLED
-   rm -rf  $DIR_DNS_WHITELIST_ENABLED/
-   mkdir  $DIR_DNS_WHITELIST_ENABLED
-     
-      for CATEGORIE in `cat $CATEGORIES_ENABLED` # on affecte les catégories dnsmasq
-      do
-	 is_blacklist=`grep $CATEGORIE $BL_CATEGORIES_AVAILABLE |wc -l`
-	 if [ $is_blacklist -ge "1" ] ; then
-		cp $DIR_DNS_FILTER_AVAILABLE/$CATEGORIE.conf $DIR_DNS_BLACKLIST_ENABLED/
-         else
-		cp $DIR_DNS_FILTER_AVAILABLE/$CATEGORIE.conf $DIR_DNS_WHITELIST_ENABLED/
-     	 fi     
-      done
-      cp $DIR_DNS_FILTER_AVAILABLE/ossi.conf $DIR_DNS_BLACKLIST_ENABLED/
-      echo "</catChoice>"
-      reabdomaine
+echo "<catChoice>"
+rm -rf ${DIR_DNS_BLACKLIST_ENABLED:?}/
+mkdir $DIR_DNS_BLACKLIST_ENABLED
+rm -rf  ${DIR_DNS_WHITELIST_ENABLED:?}/
+mkdir  $DIR_DNS_WHITELIST_ENABLED  
+while read CATEGORIE
+do
+	if [ "$(grep -c "$CATEGORIE" "$BL_CATEGORIES_AVAILABLE")" -ge "1" ] ; then
+		cp $DIR_DNS_FILTER_AVAILABLE/"$CATEGORIE".conf $DIR_DNS_BLACKLIST_ENABLED/
+	else
+		cp $DIR_DNS_FILTER_AVAILABLE/"$CATEGORIE".conf $DIR_DNS_WHITELIST_ENABLED/
+	fi     
+done < $CATEGORIES_ENABLED
+cp $DIR_DNS_FILTER_AVAILABLE/ossi.conf $DIR_DNS_BLACKLIST_ENABLED/
+echo "</catChoice>"
+reabdomaine
 }
 
 reabdomaine () {
@@ -631,55 +634,67 @@ if [ ! -f $DIR_DNS_BLACKLIST_ENABLED/ossi.conf ] ; then
 	echo > $DIR_DNS_BLACKLIST_ENABLED/ossi.conf
 fi
 echo
-echo -n $(gettext "Application whitelisting (restored area):")
-for CATEGORIE in `cat  $CATEGORIES_ENABLED  `  # pour chaque catégorie
+gettext 'Application whitelisting (restored area):'
+while read CATEGORIE
 do 
-	is_blacklist=`grep $CATEGORIE $BL_CATEGORIES_AVAILABLE |wc -l`
-	if [ $is_blacklist -ge "1" ] ; then
+	if [ "$(grep -c "$CATEGORIE" "$BL_CATEGORIES_AVAILABLE" )" -ge "1" ] ; then
 		echo -n "."
-		for DOMAINE in `cat  $DREAB`
+		while read DOMAINE
 		do
-		    cp -f $DIR_DNS_BLACKLIST_ENABLED/$CATEGORIE.conf $FILE_tmp
-		    $SED "/$DOMAINE/d" $FILE_tmp
-            cp -f $FILE_tmp $DIR_DNS_BLACKLIST_ENABLED/$CATEGORIE.conf
-		done
+		    cp -f $DIR_DNS_BLACKLIST_ENABLED/"$CATEGORIE".conf "$FILE_tmp"
+		    $SED "/$DOMAINE/d" "$FILE_tmp"
+            cp -f "$FILE_tmp" $DIR_DNS_BLACKLIST_ENABLED/"$CATEGORIE".conf
+		done < $DREAB
+		
 		for DOMAINE in $DOMAINEDEPOTS
 		do
-		    cp -f $DIR_DNS_BLACKLIST_ENABLED/$CATEGORIE.conf $FILE_tmp
-		    $SED "/$DOMAINE/d" $FILE_tmp
-            cp -f $FILE_tmp $DIR_DNS_BLACKLIST_ENABLED/$CATEGORIE.conf
+		    cp -f $DIR_DNS_BLACKLIST_ENABLED/"$CATEGORIE".conf "$FILE_tmp"
+		    $SED "/$DOMAINE/d" "$FILE_tmp"
+            cp -f "$FILE_tmp" $DIR_DNS_BLACKLIST_ENABLED/"$CATEGORIE".conf
 		done
     fi
-done
-echo "localhost" > $E2GUXSITELIST
-echo "127.0.0.1" >> $E2GUXSITELIST
-echo $BL_SERVER >> $E2GUXSITELIST
-echo $DOMAINEDEPOTS | sed -e "s/ /\n/g" >> $E2GUXSITELIST
-cat $DREAB | sed -e"s/^\.//g" | sed -e"s/^www.//g" >> $E2GUXSITELIST
+done < $CATEGORIES_ENABLED
+
+{ 
+echo 'localhost' 
+echo '127.0.0.1' 
+echo "$BL_SERVER" 
+for domain in $DOMAINEDEPOTS 
+do 
+	echo "$domain" 
+done 
+cat < "$DREAB" | sed -e"s/^\.//g" | sed -e"s/^www.//g" 
+}  > "$E2GUXSITELIST"
+
 echo -n "."
-cat $DREAB | sed -e "s? ??g" | sed -e "s?.*?server=/&/#?g" >  $DIR_DNS_WHITELIST_ENABLED/whiteliste.ossi.conf
+cat < "$DREAB" | sed -e "s? ??g" | sed -e "s?.*?server=/&/#?g" >  "$DIR_DNS_WHITELIST_ENABLED"/whiteliste.ossi.conf
 echo
 $UMFILEtmp
-rm -f $FILE_tmp
+rm -f "$FILE_tmp"
 date +%H:%M:%S
+
+
+{
 ## on force a passer par forcesafesearch.google.com de maninière transparente
-forcesafesearchgoogle=`host -ta forcesafesearch.google.com|cut -d" " -f4`	# retrieve forcesafesearch.google.com ip
-echo "# nosslsearch redirect server for google" > $DIR_DNS_BLACKLIST_ENABLED/googlenosslsearch.conf	
-for subdomaingoogle in `wget http://www.google.com/supported_domains -O - 2> /dev/null `  # pour chaque sous domain de google
+forcesafesearchgoogle=$(host -ta forcesafesearch.google.com|cut -d" " -f4)	# retrieve forcesafesearch.google.com ip
+echo "# forcesafesearch redirect server for google" 
+for subdomaingoogle in $(wget http://www.google.com/supported_domains -O - 2> /dev/null )  # pour chaque sous domain de google
 do 
-echo "address=/www$subdomaingoogle/$forcesafesearchgoogle" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf	
+echo "address=/www$subdomaingoogle/$forcesafesearchgoogle" 	
 done
-## on force a passer par safe.duckduckgo.com
-for ipsafeduckduckgo in `host -ta safe.duckduckgo.com|cut -d" " -f4 | grep -v alias`
+echo "# on force a passer par safe.duckduckgo.com" 
+for ipsafeduckduckgo in $(host -ta safe.duckduckgo.com|cut -d" " -f4 | grep -v alias)
 do
-echo "address=/safe.duckduckgo.com/$ipsafeduckduckgo" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
+	echo "address=/safe.duckduckgo.com/$ipsafeduckduckgo" 
 done
-echo "address=/duckduckgo.com/127.0.0.1" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
+## les requette sur http(s)://duckduckgo.com sont rediriger vers lighttpd qui les renvois vers safe.duckduckgo.com
+echo "address=/duckduckgo.com/127.0.0.1" 
 
 ## on attribut une seul ip pour les recherches sur bing de manière a pouvoir bloquer sont acces en https dans iptables.
 ## et ainci forcer le safesearch via privoxy.
 ## tous les sous domaines type fr.bing.com ... retourneront l'ip de www.bing.com
-echo "address=/.bing.com/$(host -ta bing.com|cut -d" " -f4)" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
+
+echo "address=/.bing.com/$(host -ta bing.com|cut -d" " -f4)"
 
 ## on force a passer par search.yahoo.com pour redirection url par lighttpd
 #ipsearchyahoo=`host -ta search.yahoo.com|cut -d" " -f4 | grep [0-9]`
@@ -687,7 +702,8 @@ echo "address=/.bing.com/$(host -ta bing.com|cut -d" " -f4)" >> $DIR_DNS_BLACKLI
 #echo "address=/search.yahoo.com/127.0.0.1" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
 
 # on bloque les moteurs de recherche pas asser sur
-echo "address=/search.yahoo.com/127.0.0.10" >> $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
+echo "address=/search.yahoo.com/127.0.0.10"
+} > $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf
 
 
 echo "</reabdomaine>"
@@ -696,9 +712,7 @@ echo "</reabdomaine>"
 
 dnsmasqon () {
 echo "<dnsmasqon>"
-   categorie1=$(sed -n "1 p" $CATEGORIES_ENABLED) # on considère que si la 1ère catégorie activée est un blacklist on fonctionne par blacklist.
-   is_blacklist=$(grep $categorie1 $BL_CATEGORIES_AVAILABLE |wc -l)
-   if [ $is_blacklist -ge "1" ] ; then
+   if [ "$(grep -c "$(sed -n "1 p" $CATEGORIES_ENABLED)" "$BL_CATEGORIES_AVAILABLE" )" -ge "1" ] ; then
    $SED "s?^DNSMASQ.*?DNSMASQ=BLACK?g" $FILE_CONF
 cat << EOF > $DNSMASQCONF 
 # Configuration file for "dnsmasq with blackhole"
@@ -735,17 +749,17 @@ $PRIVOXYrestart
 echo "</dnsmasqoff>"
 }
 ipMaskValide() {
-ip=$(echo $1 | cut -d"/" -f1)
-mask=$(echo $1 | grep "/" | cut -d"/" -f2)
-if [ $(echo $1 | grep -c "^\(\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)\.\)\{3\}\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)$") -eq 1 ];then
+ip=$(echo "$1" | cut -d"/" -f1)
+mask=$(echo "$1" | grep "/" | cut -d"/" -f2)
+if [ "$(echo "$1" | grep -c "^\(\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)\.\)\{3\}\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)$")" -eq 1 ];then
 	echo 1
 	return 1
 fi
-if [ ! $(echo $ip | grep -c "^\(\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)\.\)\{3\}\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)$") -eq 1 ];then
+if [ ! "$(echo "$ip" | grep -c "^\(\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)\.\)\{3\}\(2[0-5][0-5]\|2[0-4][0-9]\|1[0-9][0-9]\|[0-9]\{1,2\}\)$")" -eq 1 ];then
 	echo 0
 	return 0
 fi
-if [ $(echo $mask | grep -c "^\([1-9]\|[1-2][0-9]\|3[0-2]\)$") -eq 1 ];then
+if [ "$(echo "$mask" | grep -c "^\([1-9]\|[1-2][0-9]\|3[0-2]\)$")" -eq 1 ];then
 	echo 1
 	return 1
 fi
@@ -754,23 +768,23 @@ octn=255
 result=1
 while [ $i -le 4 ]
 do
-oct=$( echo $mask | grep '\.'| cut -d "." -f$i )
-if [ -z $oct ] ; then
+oct=$( echo "$mask" | grep '\.'| cut -d "." -f$i )
+if [ -z "$oct" ] ; then
 	result=0
 	break
 fi
-if [ ! $octn -eq 255 ];then
-	if [ ! $oct -eq 0 ];then
+if [ ! "$octn" -eq 255 ];then
+	if [ ! "$oct" -eq 0 ];then
 		result=0
 		break
 	fi
 fi 
 octn=$oct
-if [ ! $oct -eq 255 ] &&  [ ! $oct -eq 254 ]  &&  [ ! $oct -eq 252 ] &&  [ ! $oct -eq 248 ] &&  [ ! $oct -eq 240 ] &&  [ ! $oct -eq 224 ] &&  [ ! $oct -eq 192 ] &&  [ ! $oct -eq 128 ] &&  [ ! $oct -eq 0 ]; then
+if [ ! "$oct" -eq 255 ] &&  [ ! "$oct" -eq 254 ]  &&  [ ! "$oct" -eq 252 ] &&  [ ! "$oct" -eq 248 ] &&  [ ! "$oct" -eq 240 ] &&  [ ! "$oct" -eq 224 ] &&  [ ! "$oct" -eq 192 ] &&  [ ! "$oct" -eq 128 ] &&  [ ! "$oct" -eq 0 ]; then
 	result=0
 	break	
   fi
-i=$( expr $i + 1 )
+i=$(( i + 1 ))
 done
    echo $result
    return $result
@@ -781,19 +795,19 @@ ipglobal () {
     $IPTABLES -P OUTPUT DROP
     $IPTABLES -P FORWARD DROP
     # TCP Syn Flood
-    $IPTABLES -A INPUT -i $interface_WAN -p tcp --syn -m limit --limit 3/s -j ACCEPT
+    $IPTABLES -A INPUT -i "$interface_WAN" -p tcp --syn -m limit --limit 3/s -j ACCEPT
     # UDP Syn Flood
-    $IPTABLES -A INPUT -i $interface_WAN -p udp -m limit --limit 10/s -j ACCEPT
+    $IPTABLES -A INPUT -i "$interface_WAN" -p udp -m limit --limit 10/s -j ACCEPT
 
 	### IP indésirables
  
-    if [ -e $FILEIPBLACKLIST ] ;  then
+    if [ -e "$FILEIPBLACKLIST" ] ;  then
 	   while read ligne
 	   do
-		ipdrop=`echo $ligne | cut -d " " -f1`  
-	    if [ $( ipMaskValide $ipdrop ) -eq 1 ] ;then
-			$IPTABLES -I INPUT  -s $ipdrop -j DROP
-			$IPTABLES -I OUTPUT  -d $ipdrop -j DROP
+		ipdrop=$(echo "$ligne" | cut -d " " -f1)  
+	    if [ "$( ipMaskValide "$ipdrop" )" -eq 1 ] ;then
+			$IPTABLES -I INPUT  -s "$ipdrop" -j DROP
+			$IPTABLES -I OUTPUT  -d "$ipdrop" -j DROP
 		fi
        done < $FILEIPBLACKLIST
     else
@@ -810,8 +824,8 @@ ipglobal () {
     $IPTABLES -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
      
     ### DHCP
-    $IPTABLES -A OUTPUT -o $interface_WAN -p udp --sport 68 --dport 67 -j ACCEPT
-    $IPTABLES -A INPUT -i $interface_WAN -p udp --sport 67 --dport 68 -j ACCEPT
+    $IPTABLES -A OUTPUT -o "$interface_WAN" -p udp --sport 68 --dport 67 -j ACCEPT
+    $IPTABLES -A INPUT -i "$interface_WAN" -p udp --sport 67 --dport 68 -j ACCEPT
  
     ### DNS indispensable pour naviguer facilement sur le web ###
     $IPTABLES -A OUTPUT -p tcp -m tcp --dport 53 -j ACCEPT
@@ -836,8 +850,8 @@ ipglobal () {
 	$IPTABLES -A OUTPUT -p tcp --dport 21 -j ACCEPT
 	$IPTABLES -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 	
-	if [ -e $FILEIPTABLES ] ;  then
-		source $FILEIPTABLES
+	if [ -e "$FILEIPTABLES" ] ;  then
+		source "$FILEIPTABLES"
     else
 	    initfileiptables
     fi
@@ -849,66 +863,67 @@ $IPTABLES -A FORWARD -j LOG  --log-prefix "iptables: "
 
 }
 initfileiptables () {
-    echo >  $FILEIPTABLES
-	echo '' >>  $FILEIPTABLES
-	echo '## on autorise tous le trafic sortant à destination de notre lan (PC imprimante de la maison)' >>  $FILEIPTABLES
-	echo '$IPTABLES -A OUTPUT -d $reseau_box -j ACCEPT ' >>  $FILEIPTABLES
-	echo '## on acepte tous le trafic entrant en provenence de notre lan (PC imprimante de la maison)' >>  $FILEIPTABLES
-	echo '$IPTABLES -A INPUT -s $reseau_box -j ACCEPT  ' >>  $FILEIPTABLES
-    echo '' >>  $FILEIPTABLES
-    echo '### smtp + pop ssl thunderbird ...  ####' >>  $FILEIPTABLES
-	echo '$IPTABLES -A OUTPUT -p tcp -m tcp --dport 993 -j ACCEPT		# imap/ssl' >>  $FILEIPTABLES
-	echo '$IPTABLES -A OUTPUT -p tcp -m tcp --dport 995 -j ACCEPT		# pop/ssl' >>  $FILEIPTABLES
-	echo '$IPTABLES -A OUTPUT -p tcp -m tcp --dport 465 -j ACCEPT      # smtp/ssl' >>  $FILEIPTABLES
-	echo '' >>  $FILEIPTABLES
-	echo '# Ping Externe' >>  $FILEIPTABLES
-	echo '# $IPTABLES -A INPUT -i $interface_WAN -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT' >>  $FILEIPTABLES
-    echo '# $IPTABLES -A INPUT -i $interface_WAN -p icmp --icmp-type echo-reply -m limit --limit 1/s -j ACCEPT' >>  $FILEIPTABLES
-	echo '' >>  $FILEIPTABLES
-	echo '### cups serveur , impriment partager sous cups' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT -d $ip_broadcast -p udp -m udp --sport 631 --dport 631 -j ACCEPT # diffusion des imprimantes partager sur le réseaux' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A INPUT -s $reseau_box -m state --state NEW -p TCP --dport 631 -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -I INPUT -s $ipbox -m state --state NEW -p TCP --dport 631 -j DROP # drop les requette provenent de la passerelle' >>  $FILEIPTABLES
-    echo '' >>  $FILEIPTABLES
-    echo '### emesene,pidgin,amsn...  ####' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 1863 -j ACCEPT  ' >>  $FILEIPTABLES   
-	echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT -p udp -m udp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam' >>  $FILEIPTABLES
-	echo '' >>  $FILEIPTABLES
-    echo '###  smtp + pop thunderbird ...  ###' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 25 -j ACCEPT' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 110 -j ACCEPT' >>  $FILEIPTABLES
-    echo '### client-transmission' >>  $FILEIPTABLES
-    echo '# ouvre beaucoup de ports' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT -p udp -m udp --sport 51413 --dport 1023:65535  -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --sport 30000:65535 --dport 1023:65535  -j ACCEPT' >>  $FILEIPTABLES
-    echo '###Ryzom' >>  $FILEIPTABLES
-	echo '#srvupdateRtzom=178.33.44.72' >>  $FILEIPTABLES
-	echo '#srvRyzom1=176.31.229.93' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d $srvupdateRtzom -p tcp --dport 873 -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 43434 -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 50000 -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 40916 -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p udp --dport 47851:47860 -j ACCEPT' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 47851:47860 -j ACCEPT' >>  $FILEIPTABLES
-	echo '### Regnum Online' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT  -d 91.123.197.131 -p tcp --dport 47300 -j ACCEPT # autentification' >>  $FILEIPTABLES
-	echo '#$IPTABLES -A OUTPUT  -d 91.123.197.142 -p tcp --dport 48000:48002  -j ACCEPT # nemon' >>  $FILEIPTABLES
-    echo '### NeverWinter Nights 1' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT  -p udp --dport 5120:5121 -j ACCEPT' >>  $FILEIPTABLES
-    echo "#\$IPTABLES -I OUTPUT  -d 204.50.199.9 -j DROP # nwmaster.bioware.com permet d'éviter le temps d'attente avant l'ouverture du multijoueur " >>  $FILEIPTABLES
-    echo '### LandesEternelles' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT  -d 62.93.225.45 -p tcp --dport 3000 -j ACCEPT' >>  $FILEIPTABLES
-    echo '### Batel for Wesnoth' >>  $FILEIPTABLES
-    echo '#14998 pour version stable.' >>  $FILEIPTABLES
-    echo '#14999 pour version stable précédente.' >>  $FILEIPTABLES
-    echo '#15000 pour version de développement.' >>  $FILEIPTABLES
-    echo '#15001 télécharger addons' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A OUTPUT  -d 65.18.193.12 -p tcp --sport 1023:65535 --dport 14998:15001 -j ACCEPT' >>  $FILEIPTABLES
-    echo '#$IPTABLES -A INPUT   -p tcp --sport 1023:65535 --dport 15000 -j ACCEPT' >>  $FILEIPTABLES
-	chown root:root  $FILEIPTABLES
-	chmod 750  $FILEIPTABLES
+
+cat << EOF >  $FILEIPTABLES
+## on autorise tous le trafic sortant à destination de notre lan (PC imprimante de la maison)
+\$IPTABLES -A OUTPUT -d \$reseau_box -j ACCEPT
+## on acepte tous le trafic entrant en provenence de notre lan (PC imprimante de la maison)
+\$IPTABLES -A INPUT -s \$reseau_box -j ACCEPT 
+
+### smtp + pop ssl thunderbird ...  ####
+\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 993 -j ACCEPT		# imap/ssl
+\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 995 -j ACCEPT		# pop/ssl
+\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 465 -j ACCEPT     # smtp/ssl
+
+# Ping Externe
+# \$IPTABLES -A INPUT -i \$interface_WAN -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT
+# \$IPTABLES -A INPUT -i \$interface_WAN -p icmp --icmp-type echo-reply -m limit --limit 1/s -j ACCEPT
+
+### cups serveur , impriment partager sous cups
+#\$IPTABLES -A OUTPUT -d \$ip_broadcast -p udp -m udp --sport 631 --dport 631 -j ACCEPT # diffusion des imprimantes partager sur le réseaux
+#\$IPTABLES -A INPUT -s \$reseau_box -m state --state NEW -p TCP --dport 631 -j ACCEPT
+#\$IPTABLES -I INPUT -s \$ipbox -m state --state NEW -p TCP --dport 631 -j DROP # drop les requette provenent de la passerelle
+
+### emesene,pidgin,amsn...  ####
+#\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 1863 -j ACCEPT     
+#\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam
+#\$IPTABLES -A OUTPUT -p udp -m udp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam
+
+###  smtp + pop thunderbird ...  ###
+#\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 25 -j ACCEPT
+#\$IPTABLES -A OUTPUT -p tcp -m tcp --dport 110 -j ACCEPT
+### client-transmission
+# ouvre beaucoup de ports
+#\$IPTABLES -A OUTPUT -p udp -m udp --sport 51413 --dport 1023:65535  -j ACCEPT
+#\$IPTABLES -A OUTPUT -p tcp -m tcp --sport 30000:65535 --dport 1023:65535  -j ACCEPT
+###Ryzom
+#srvupdateRtzom=178.33.44.72
+#srvRyzom1=176.31.229.93
+#\$IPTABLES -A OUTPUT  -d \$srvupdateRtzom -p tcp --dport 873 -j ACCEPT
+#\$IPTABLES -A OUTPUT  -d \$srvRyzom1 -p tcp --dport 43434 -j ACCEPT
+#\$IPTABLES -A OUTPUT  -d \$srvRyzom1 -p tcp --dport 50000 -j ACCEPT
+#\$IPTABLES -A OUTPUT  -d \$srvRyzom1 -p tcp --dport 40916 -j ACCEPT
+#\$IPTABLES -A OUTPUT  -d \$srvRyzom1 -p udp --dport 47851:47860 -j ACCEPT
+#\$IPTABLES -A OUTPUT  -d \$srvRyzom1 -p tcp --dport 47851:47860 -j ACCEPT
+### Regnum Online
+#\$IPTABLES -A OUTPUT  -d 91.123.197.131 -p tcp --dport 47300 -j ACCEPT # autentification
+#\$IPTABLES -A OUTPUT  -d 91.123.197.142 -p tcp --dport 48000:48002  -j ACCEPT # nemon
+### NeverWinter Nights 1
+#\$IPTABLES -A OUTPUT  -p udp --dport 5120:5121 -j ACCEPT
+#\$IPTABLES -I OUTPUT  -d 204.50.199.9 -j DROP # nwmaster.bioware.com permet d'éviter le temps d'attente avant l'ouverture du multijoueur " >>  $FILEIPTABLES
+### LandesEternelles
+#\$IPTABLES -A OUTPUT  -d 62.93.225.45 -p tcp --dport 3000 -j ACCEPT
+### Batel for Wesnoth
+#14998 pour version stable.
+#14999 pour version stable précédente.
+#15000 pour version de développement.
+#15001 télécharger addons
+#\$IPTABLES -A OUTPUT  -d 65.18.193.12 -p tcp --sport 1023:65535 --dport 14998:15001 -j ACCEPT
+#\$IPTABLES -A INPUT   -p tcp --sport 1023:65535 --dport 15000 -j ACCEPT
+EOF
 	
+chown root:root  $FILEIPTABLES
+chmod 750  $FILEIPTABLES
 }
 
 iptablesreload () {
@@ -922,7 +937,7 @@ iptablesreload () {
    $IPTABLES -P INPUT ACCEPT
    $IPTABLES -P OUTPUT ACCEPT
    $IPTABLES -P FORWARD ACCEPT
-   if [ ! $FILTRAGEISOFF -eq 1 ];then
+   if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 	 $IPTABLES -t nat -N ctparental
      $IPTABLES -t nat -A OUTPUT -j ctparental
       
@@ -930,29 +945,29 @@ iptablesreload () {
 	  $IPTABLES -t nat -A ctparental -m owner --uid-owner "$PROXYuser" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
 	  
 	  # on interdit l'accès a bing en https .
-	  ipbing=$(cat $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf | grep "address=/.bing.com/" | cut -d "/" -f3)
-	  $IPTABLES -A OUTPUT -d $ipbing -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a bing
+	  ipbing=$(cat < $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf | grep "address=/.bing.com/" | cut -d "/" -f3)
+	  $IPTABLES -A OUTPUT -d "$ipbing" -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a bing
 	  
 	  for ipdailymotion in $(host -ta dailymotion.com|cut -d" " -f4)  
 	  do 
-		$IPTABLES -A OUTPUT -d $ipdailymotion -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a dailymotion.com
+		$IPTABLES -A OUTPUT -d "$ipdailymotion" -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a dailymotion.com
 	  done
 
-      for user in `listeusers` ; do
-      if  [ $(groups $user | grep -c -E "( ctoff$)|( ctoff )" ) -eq 0 ];then
+      for user in $(listeusers) ; do
+      if  [ "$(groups "$user" | grep -c -E "( ctoff$)|( ctoff )" )" -eq 0 ];then
          #on rediriges les requet DNS des usagers filtrés sur dnsmasq
          $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 53 -j DNAT --to 127.0.0.1:54 
          $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
          #force passage par e2guardian pour les utilisateurs filtrés 
-		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 80 -j DNAT --to 127.0.0.1:$E2GUport
-		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport $PROXYport -j DNAT --to 127.0.0.1:$E2GUport
+		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 80 -j DNAT --to 127.0.0.1:"$E2GUport"
+		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport "$PROXYport" -j DNAT --to 127.0.0.1:"$E2GUport"
 		 #$IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 443 -j DNAT --to 127.0.0.1:$E2GUport  # proxy https transparent n'est pas possible avec privoxy
 		 $IPTABLES -A OUTPUT ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 443 -j REJECT # on interdit l'aces https sans passer par le proxy pour les utilisateur filtré.	
       fi
       done
    fi
 
-   if [ $(cat $FILE_CONF | grep -c IPRULES=ON ) -eq 1 ];then
+   if [ "$(cat < $FILE_CONF | grep -c IPRULES=ON )" -eq 1 ];then
     ipglobal
    fi
 
@@ -965,21 +980,22 @@ echo "</iptablesreload>"
 }
 updatecauser () {
 echo "<updatecauser>"
-for user in `listeusers` ; do	
+for user in $(listeusers) ; do	
 	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [ -d $HOMEPCUSER ] ;then
+	if [ -d "$HOMEPCUSER" ] ;then
 			#on install le certificat dans tous les prifile firefoxe utilisateur existant 
-		for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
+		profileliste=$(cat < "$HOMEPCUSER"/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2)
+		for profilefirefox in $profileliste ; do
 			# on supprime tous les anciens certificats
 			while true
 			do
-				certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
+				certutil -D -d "$HOMEPCUSER"/.mozilla/firefox/"$profilefirefox"/ -n"CActparental - ctparental" 2&> /dev/null
 				if [ ! $? -eq 0 ];then 
 					break
 				fi
 			done
 			# on ajoute le nouveau certificat
-			certutil -A -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -i $DIRHTML/cactparental.crt -n"CActparental - ctparental" -t "CT,c,c"		
+			certutil -A -d "$HOMEPCUSER"/.mozilla/firefox/"$profilefirefox"/ -i "$DIRHTML"/cactparental.crt -n"CActparental - ctparental" -t "CT,c,c"		
 		done
 	fi
 done
@@ -1029,20 +1045,20 @@ $PRIVOXYrestart
 FoncHTTPDCONF () {
 echo "<FoncHTTPDCONF>"
 $LIGHTTPDstop
-rm -rf $DIRHTML/*
-mkdir $DIRHTML 2> /dev/null
-if [ ! -z $DIRhtmlPersonaliser ];then
-   cp -r $DIRhtmlPersonaliser/* $DIRHTML
+rm -rf "${DIRHTML:?}"/*
+mkdir "$DIRHTML" 2> /dev/null
+if [ ! -z "$DIRhtmlPersonaliser" ];then
+   cp -r "$DIRhtmlPersonaliser"/* "$DIRHTML"
 else
- cp -r /usr/local/share/CTparental/www/CTparental/* $DIRHTML
+ cp -r /usr/local/share/CTparental/www/CTparental/* "$DIRHTML"
  
 fi
 
-USERHTTPD=$(cat /etc/passwd | grep /var/www | cut -d":" -f1)
-GROUPHTTPD=$(cat /etc/group | grep $USERHTTPD | cut -d":" -f1)
-chmod 644 $FILE_CONF
-chown root:$GROUPHTTPD $FILE_CONF
-cat << EOF > $MAINCONFHTTPD
+USERHTTPD=$(cat < /etc/passwd | grep /var/www | cut -d":" -f1)
+GROUPHTTPD=$(cat < /etc/group | grep "$USERHTTPD" | cut -d":" -f1)
+chmod 644 "$FILE_CONF"
+chown root:"$GROUPHTTPD" "$FILE_CONF"
+cat << EOF > "$MAINCONFHTTPD"
 server.modules = (
 "mod_access",
 "mod_alias",
@@ -1125,24 +1141,27 @@ chmod +x /usr/share/lighttpd/include-conf-enabled.pl
 
 fi
 
-mkdir -p $DIRCONFENABLEDHTTPD
-mkdir -p $DIRadminHTML
-cp -rf CTadmin/* $DIRadminHTML/
+mkdir -p "$DIRCONFENABLEDHTTPD"
+mkdir -p "$DIRadminHTML"
+cp -rf CTadmin/* "$DIRadminHTML"/
 
 ### configuration du login mot de passe de l'interface d'administration
 if [ $nomanuel -eq 0 ]; then  
 	configloginpassword
 else
 	## variable récupérer par éritage du script DEBIAN/postinst
+	debconfloginhttp=${debconfloginhttp:="admin"}
+	debconfpassword=${debconfpassword:="admin"}
 	addadminhttpd "$debconfloginhttp" "$debconfpassword"
 	unset debconfpassword
 	unset debconfloginhttp
+	
 fi
 
 mkdir /run/lighttpd/ 2> /dev/null
 chmod 770 /run/lighttpd/
-chown root:$GROUPHTTPD /run/lighttpd/
-cat << EOF > $CTPARENTALCONFHTTPD
+chown root:"$GROUPHTTPD" /run/lighttpd/
+cat << EOF > "$CTPARENTALCONFHTTPD"
 
 fastcgi.server = (
     ".php" => (
@@ -1206,53 +1225,49 @@ server.error-handler-404 ="err404.php"
 }
 
 EOF
-if [ -e $DIRHTML/index.php ] ;  then
-ln -s $DIRHTML/index.php $DIRHTML/err404.php
+if [ -e "$DIRHTML/index.php" ] ;  then
+	ln -s "$DIRHTML"/index.php "$DIRHTML"/err404.php
 else
-	if [ -e $DIRHTML/index.html] ;  then
-	ln -s  $DIRHTML/index.html $DIRHTML/err404.html
+	if [ -e "$DIRHTML/index.html" ] ;  then
+		ln -s  "$DIRHTML"/index.html "$DIRHTML"/err404.html
 	fi
-	$SED "s?^server.error-handler-404 =.*?server.error-handler-404 =\"err404.html\"?g" $CTPARENTALCONFHTTPD
+	$SED "s?^server.error-handler-404 =.*?server.error-handler-404 =\"err404.html\"?g" "$CTPARENTALCONFHTTPD"
 fi
 
 
-chown root:$GROUPHTTPD $DREAB
-chmod 660 $DREAB
-chown root:$GROUPHTTPD $DNS_FILTER_OSSI
-chmod 660 $DNS_FILTER_OSSI
-chown root:$GROUPHTTPD $CATEGORIES_ENABLED
-chmod 660 $CATEGORIES_ENABLED
+chown root:"$GROUPHTTPD" "$DREAB"
+chmod 660 "$DREAB"
+chown root:"$GROUPHTTPD" "$DNS_FILTER_OSSI"
+chmod 660 "$DNS_FILTER_OSSI"
+chown root:"$GROUPHTTPD" "$CATEGORIES_ENABLED"
+chmod 660 "$CATEGORIES_ENABLED"
 chmod 660 /etc/sudoers
-chown root:$GROUPHTTPD $DIRE2G"lists/bannedextensionlist"
-chmod 664 $DIRE2G"lists/bannedextensionlist"
-chown root:$GROUPHTTPD $DIRE2G"lists/bannedmimetypelist"
-chmod 664 $DIRE2G"lists/bannedmimetypelist"
-chown root:$GROUPHTTPD $DIRE2G"lists/bannedsitelist"
-chmod 664 $DIRE2G"lists/bannedsitelist"
+chown root:"$GROUPHTTPD" "${DIRE2G}lists/bannedextensionlist"
+chmod 664 "${DIRE2G}lists/bannedextensionlist"
+chown root:"$GROUPHTTPD" "${DIRE2G}lists/bannedmimetypelist"
+chmod 664 "${DIRE2G}lists/bannedmimetypelist"
+chown root:"$GROUPHTTPD" "${DIRE2G}lists/bannedsitelist"
+chmod 664 "${DIRE2G}lists/bannedsitelist"
 
-sudotest=`grep Defaults:$USERHTTPD /etc/sudoers |wc -l`
-if [ $sudotest -ge "1" ] ; then
+if [ "$(grep -c Defaults:"$USERHTTPD" /etc/sudoers )" -ge "1" ] ; then
     $SED "s?^Defaults:$USERHTTPD.*requiretty.*?Defaults:$USERHTTPD     \!requiretty?g" /etc/sudoers
 else
     echo "Defaults:$USERHTTPD     !requiretty" >> /etc/sudoers
 fi
 
-sudotest=`grep "$USERHTTPD ALL=" /etc/sudoers |wc -l`
-if [ $sudotest -ge "1" ] ; then
+if [ "$(grep -c "$USERHTTPD"" ALL=" /etc/sudoers )" -ge "1" ] ; then
     $SED "s?^$USERHTTPD.*?$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff?g" /etc/sudoers
 else
     echo "$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff" >> /etc/sudoers
 fi
 	
-
-sudotest=`grep %ctoff /etc/sudoers |wc -l`		
-if [ $sudotest -ge "1" ] ; then	
+if [ "$(grep -c "%ctoff" /etc/sudoers )" -ge "1" ] ; then	
    $SED "s?^%ctoff.*?%ctoff ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -on?g" /etc/sudoers
 else
    echo "%ctoff ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -on"  >> /etc/sudoers
 fi
-sudotest=`grep "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh" /etc/sudoers |wc -l`		
-if [ $sudotest -ge "1" ] ; then	
+
+if [ "$(grep -c "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh" /etc/sudoers )" -ge "1" ] ; then	
 	$SED "s?^ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh.*?ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -on?g" /etc/sudoers
 else
 	echo "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -on" >> /etc/sudoers
@@ -1263,26 +1278,26 @@ chmod 440 /etc/sudoers
 if [ ! -f $FILE_HCONF ] ; then 
 	echo > $FILE_HCONF 
 fi
-chown root:$GROUPHTTPD $FILE_HCONF
-chmod 660 $FILE_HCONF
-if [ -f $FILE_GCTOFFCONF ] ; then 
-	chown root:$GROUPHTTPD $FILE_GCTOFFCONF
-	chmod 660 $FILE_GCTOFFCONF
+chown root:"$GROUPHTTPD" "$FILE_HCONF"
+chmod 660 "$FILE_HCONF"
+if [ -f "$FILE_GCTOFFCONF" ] ; then 
+	chown root:"$GROUPHTTPD" "$FILE_GCTOFFCONF"
+	chmod 660 "$FILE_GCTOFFCONF"
 fi
 
-if [ ! -f $FILE_HCOMPT ] ; then
-	echo "date=$(date +%D)" > $FILE_HCOMPT
+if [ ! -f "$FILE_HCOMPT" ] ; then
+	echo "date=$(date +%D)" > "$FILE_HCOMPT"
 fi
-chown root:$GROUPHTTPD $FILE_HCOMPT
-chmod 660 $FILE_HCOMPT
+chown root:"$GROUPHTTPD" "$FILE_HCOMPT"
+chmod 660 "$FILE_HCOMPT"
 
-chown -R root:$GROUPHTTPD $DIRHTML
-chown -R root:$GROUPHTTPD $DIRadminHTML
+chown -R root:"$GROUPHTTPD" "$DIRHTML"
+chown -R root:"$GROUPHTTPD" "$DIRadminHTML"
 CActparental
 $LIGHTTPDstart
 test=$?
 if [ ! $test -eq 0 ];then
-	echo $(gettext "Error launching of lighttpd Service")
+	gettext 'Error launching of lighttpd Service'
 	set -e
 	exit 1
 fi
@@ -1292,20 +1307,19 @@ configloginpassword () {
 PTNlogin='^[a-zA-Z0-9]*$'
 while (true)
 do
-loginhttp=$(whiptail --title "$(gettext "Login")" --nocancel --inputbox "$(gettext "Enter login to the administration interface") 
-$(gettext "	- Only letters or numbers.")
-$(gettext "	- 6 characters minimum:")" 10 60 3>&1 1>&2 2>&3)			
-	if [ $(expr $loginhttp : $PTNlogin) -gt 6  ];then 
+loginhttp=$(whiptail --title "$(gettext 'Login')" --nocancel --inputbox "$(gettext 'Enter login to the administration interface') 
+$(gettext '	- Only letters or numbers.')
+$(gettext '	- 6 characters minimum:')" 10 60 3>&1 1>&2 2>&3)			
+	if [ "$(expr "$loginhttp" : "$PTNlogin")" -gt 6  ];then 
 		break
 	fi	
 done
 while (true)
 do
-password=$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Enter your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)
-		password2=$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Confirm your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)
-		if [ $password = $password2 ] ; then
-			
-			if [ $(echo $password | grep -E [a-z] | grep -E [0-9] | grep -E [A-Z] | grep -E '[&éè~#{}()ç_@à?.;:/!,$<>=£%]' | wc -c ) -ge 8 ] ; then
+password=$(whiptail --title "$(gettext 'Password')" --nocancel --passwordbox "$(gettext 'Enter your password and press OK to continue.')" 10 60 3>&1 1>&2 2>&3)
+		password2=$(whiptail --title "$(gettext 'Password')" --nocancel --passwordbox "$(gettext 'Confirm your password and press OK to continue.')" 10 60 3>&1 1>&2 2>&3)
+		if [ "$password" = "$password2" ] ; then
+			if [ "$(echo "$password" | grep -E "[a-z]" | grep -E "[0-9]" | grep -E "[A-Z]" | grep -c '[&éè~#{}()ç_@à?.;:/!,$<>=£%]' )" -ge 8 ] ; then
 				break
 			else
 				whiptail --title "$(gettext "Password")" --msgbox "$(gettext "Password is not complex enough, it must contain at least:")
@@ -1323,38 +1337,38 @@ addadminhttpd "$loginhttp" "$password"
 CActparental () {
 echo "<CActparental>"
 DIR_TMP=${TMPDIR-/tmp}/ctparental-mkcert.$$
-mkdir $DIR_TMP
-mkdir $CADIR 2> /dev/null
+mkdir "$DIR_TMP"
+mkdir "$CADIR" 2> /dev/null
 
 ## création de la clef priver ca et du certificat ca
-openssl genrsa  1024 > $DIR_TMP/cactparental.key 2> /dev/null
-openssl req -new -x509 -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=CActparental" -days 10000 -key $DIR_TMP/cactparental.key > $DIR_TMP/cactparental.crt 
+openssl genrsa  1024 > "$DIR_TMP"/cactparental.key 2> /dev/null
+openssl req -new -x509 -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=CActparental" -days 10000 -key "$DIR_TMP"/cactparental.key > "$DIR_TMP"/cactparental.crt 
 
 ## création de la clef privée serveur localhost
-openssl genrsa 1024 > $DIR_TMP/localhost.key 2> /dev/null
+openssl genrsa 1024 > "$DIR_TMP"/localhost.key 2> /dev/null
 ## création certificat localhost et signature par la ca
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=localhost" -key $DIR_TMP/localhost.key > $DIR_TMP/localhost.csr 
-openssl x509 -req -in $DIR_TMP/localhost.csr -out $DIR_TMP/localhost.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAcreateserial -CAserial $DIR_TMP/ca.srl  
+openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=localhost" -key "$DIR_TMP"/localhost.key > "$DIR_TMP"/localhost.csr 
+openssl x509 -req -in "$DIR_TMP"/localhost.csr -out "$DIR_TMP"/localhost.crt -CA "$DIR_TMP"/cactparental.crt -CAkey "$DIR_TMP"/cactparental.key -CAcreateserial -CAserial "$DIR_TMP"/ca.srl  
 
 ## création du certificat duckduckgo pour redirection vers safe.duckduckgo.com
-openssl genrsa 1024 > $DIR_TMP/duckduckgo.key 2> /dev/null
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=duckduckgo.com" -key $DIR_TMP/duckduckgo.key > $DIR_TMP/duckduckgo.csr 
-openssl x509 -req -in $DIR_TMP/duckduckgo.csr -out $DIR_TMP/duckduckgo.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAserial $DIR_TMP/ca.srl 
+openssl genrsa 1024 > "$DIR_TMP"/duckduckgo.key 2> /dev/null
+openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=duckduckgo.com" -key "$DIR_TMP"/duckduckgo.key > "$DIR_TMP"/duckduckgo.csr 
+openssl x509 -req -in "$DIR_TMP"/duckduckgo.csr -out "$DIR_TMP"/duckduckgo.crt -CA "$DIR_TMP"/cactparental.crt -CAkey "$DIR_TMP"/cactparental.key -CAserial "$DIR_TMP"/ca.srl 
 
 ## création du certificat search.yahoo.com pour redirection vers pages d'interdiction
-openssl genrsa 1024 > $DIR_TMP/search.yahoo.com.key 2> /dev/null
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=search.yahoo.com" -key $DIR_TMP/search.yahoo.com.key > $DIR_TMP/search.yahoo.com.csr 
-openssl x509 -req -in $DIR_TMP/search.yahoo.com.csr -out $DIR_TMP/search.yahoo.com.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAserial $DIR_TMP/ca.srl 
+openssl genrsa 1024 > "$DIR_TMP"/search.yahoo.com.key 2> /dev/null
+openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=search.yahoo.com" -key "$DIR_TMP"/search.yahoo.com.key > "$DIR_TMP"/search.yahoo.com.csr 
+openssl x509 -req -in "$DIR_TMP"/search.yahoo.com.csr -out "$DIR_TMP"/search.yahoo.com.crt -CA "$DIR_TMP"/cactparental.crt -CAkey "$DIR_TMP"/cactparental.key -CAserial "$DIR_TMP"/ca.srl 
 
 ## instalation de la CA dans les ca de confiance.
-cp -f $DIR_TMP/cactparental.crt $CADIR/
-cp -f $DIR_TMP/cactparental.crt $DIRHTML
-cp -f $DIR_TMP/cactparental.crt $REPCAMOZ
+cp -f "$DIR_TMP"/cactparental.crt "$CADIR"/
+cp -f "$DIR_TMP"/cactparental.crt "$DIRHTML"
+cp -f "$DIR_TMP"/cactparental.crt "$REPCAMOZ"
 ## instalation des certificats serveur
-cat $DIR_TMP/localhost.key $DIR_TMP/localhost.crt > $PEMSRVDIR/localhost.pem
-cat $DIR_TMP/duckduckgo.key $DIR_TMP/duckduckgo.crt > $PEMSRVDIR/duckduckgo.pem
-cat $DIR_TMP/search.yahoo.com.key $DIR_TMP/search.yahoo.com.crt > $PEMSRVDIR/search.yahoo.com.pem
-rm -rf $DIR_TMP
+cat "$DIR_TMP"/localhost.key "$DIR_TMP"/localhost.crt > "$PEMSRVDIR"/localhost.pem
+cat "$DIR_TMP"/duckduckgo.key "$DIR_TMP"/duckduckgo.crt > "$PEMSRVDIR"/duckduckgo.pem
+cat "$DIR_TMP"/search.yahoo.com.key "$DIR_TMP"/search.yahoo.com.crt > "$PEMSRVDIR"/search.yahoo.com.pem
+rm -rf "$DIR_TMP"
 
 updatecauser
 echo "</CActparental>"
@@ -1398,10 +1412,10 @@ install () {
 		while (true); do
 		$EDIT $DIR_CONF/dist.conf
 		clear
-		cat  $DIR_CONF/dist.conf | grep -v -E ^# | grep -v ^$
-		echo $(gettext "Enter: S to continue with these parameters.")
-		echo $(gettext "Enter Q to Quit Setup.")
-		echo $(gettext "Enter any other choice to change settings.")
+		cat < "$DIR_CONF"/dist.conf | grep -v -E ^# | grep -v ^$
+		gettext 'Enter: S to continue with these parameters.'
+		gettext 'Enter Q to Quit Setup.'
+		gettext 'Enter any other choice to change settings.'
 		 read choi
 		case $choi in
 			 S | s )
@@ -1431,47 +1445,43 @@ install () {
       if [ $noinstalldep = "0" ]; then
 	  for PACKAGECT in $CONFLICTS
          do
-			$CMDREMOVE $PACKAGECT 2> /dev/null
+			$CMDREMOVE "$PACKAGECT" 2> /dev/null
          done
 	  fi
-      if [ $noinstalldep = "0" ]; then
-	      $CMDINSTALL $DEPENDANCES
+      if [ "$noinstalldep" = "0" ]; then
+	      $CMDINSTALL "$DEPENDANCES"
       fi
       # on desactive l'ipv6
-		test=`grep net.ipv6.conf.all.disable_ipv6= $FILESYSCTL |wc -l`
-		if [ $test -ge "1" ] ; then
-			$SED "s?^net.ipv6.conf.all.disable_ipv6=.*?net.ipv6.conf.all.disable_ipv6=1?g" $FILESYSCTL
+		if [ "$( grep -c "net.ipv6.conf.all.disable_ipv6=" "$FILESYSCTL" )" -ge "1" ] ; then
+			$SED "s?^net.ipv6.conf.all.disable_ipv6=.*?net.ipv6.conf.all.disable_ipv6=1?g" "$FILESYSCTL"
 		else
-			echo "net.ipv6.conf.all.disable_ipv6=1" >> $FILESYSCTL
+			echo "net.ipv6.conf.all.disable_ipv6=1" >> "$FILESYSCTL"
 		fi
 		unset test
-		test=`grep net.ipv6.conf.default.disable_ipv6= $FILESYSCTL |wc -l`
-		if [ $test -ge "1" ] ; then
-			$SED "s?^net.ipv6.conf.default.disable_ipv6=.*?net.ipv6.conf.default.disable_ipv6=1?g" $FILESYSCTL
+		if [ "$( grep -c "net.ipv6.conf.default.disable_ipv6=" "$FILESYSCTL" )" -ge "1" ] ; then
+			$SED "s?^net.ipv6.conf.default.disable_ipv6=.*?net.ipv6.conf.default.disable_ipv6=1?g" "$FILESYSCTL"
 		else
-			echo "net.ipv6.conf.default.disable_ipv6=1" >> $FILESYSCTL
+			echo "net.ipv6.conf.default.disable_ipv6=1" >> "$FILESYSCTL"
 		fi
 		unset test
-		test=`grep net.ipv6.conf.lo.disable_ipv6= $FILESYSCTL |wc -l`
-		if [ $test -ge "1" ] ; then
-			$SED "s?^net.ipv6.conf.lo.disable_ipv6=.*?net.ipv6.conf.lo.disable_ipv6=1?g" $FILESYSCTL
+		if [ "$( grep -c "net.ipv6.conf.lo.disable_ipv6=" "$FILESYSCTL" )" -ge "1" ] ; then
+			$SED "s?^net.ipv6.conf.lo.disable_ipv6=.*?net.ipv6.conf.lo.disable_ipv6=1?g" "$FILESYSCTL"
 		else
-			echo "net.ipv6.conf.lo.disable_ipv6=1" >> $FILESYSCTL
+			echo "net.ipv6.conf.lo.disable_ipv6=1" >> "$FILESYSCTL"
 		fi
 		unset test
-		sysctl -p $FILESYSCTL
+		sysctl -p "$FILESYSCTL"
       ######################
       # on charge le(s) module(s) indispensable(s) pour iptables.
-		test=`grep ip_conntrack_ftp $FILEMODULESLOAD |wc -l`
-		if [ $test -ge "1" ] ; then
-			$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" $FILEMODULESLOAD
+		if [ "$( grep -c ip_conntrack_ftp "$FILEMODULESLOAD" )" -ge "1" ] ; then
+			$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" "$FILEMODULESLOAD"
 		else
-			echo "#ip_conntrack_ftp" >> $FILEMODULESLOAD
+			echo "#ip_conntrack_ftp" >> "$FILEMODULESLOAD"
 		fi
 		modprobe ip_conntrack_ftp	
-		$SED "s?.*ip_conntrack_ftp.*?ip_conntrack_ftp?g" $FILEMODULESLOAD 
-		echo ':msg,contains,"iptables" /var/log/iptables.log' > $RSYSLOGCTPARENTAL 
-		echo '& ~' >> $RSYSLOGCTPARENTAL 
+		$SED "s?.*ip_conntrack_ftp.*?ip_conntrack_ftp?g" "$FILEMODULESLOAD"
+		echo ':msg,contains,"iptables" /var/log/iptables.log' > "$RSYSLOGCTPARENTAL" 
+		echo '& ~' >> "$RSYSLOGCTPARENTAL" 
 	  #######################
       
       if [ ! -f blacklists.tar.gz ]
@@ -1480,18 +1490,18 @@ install () {
       else
          tar -xzf blacklists.tar.gz -C $tempDIR
          if [ ! $? -eq 0 ]; then
-            echo $(gettext "archive extraction error , interrupted process")
+            gettext 'archive extraction error , interrupted process'
             uninstall
             set -e
             exit 1
          fi
-         rm -rf $DIR_DNS_FILTER_AVAILABLE/
+         rm -rf ${DIR_DNS_FILTER_AVAILABLE:?}/
          mkdir $DIR_DNS_FILTER_AVAILABLE
       fi
       adapt
       catChoice
       dnsmasqon
-      $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
+      $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=$(date +%d-%m-%Y\ %T)?g" $FILE_CONF
 	  confe2guardian
 	  confprivoxy
       FoncHTTPDCONF
@@ -1512,11 +1522,11 @@ updatelistgctoff () {
 		echo -n > $FILE_GCTOFFCONF
 	fi
 	## on ajoute tous les utilisateurs manquants dans la liste
-	for PCUSER in `listeusers`
+	for PCUSER in $(listeusers)
 	do
-		if [ $(cat $FILE_GCTOFFCONF | sed -e "s/#//g" | grep -c -E "^$PCUSER$") -eq 0 ];then
+		if [ "$(cat < $FILE_GCTOFFCONF | sed -e "s/#//g" | grep -c -E "^$PCUSER$")" -eq 0 ];then
 			result="1"	
-			if [ $(groups $PCUSER | grep -c -E "( sudo )|( sudo$)") -eq 1 ];then
+			if [ "$(groups "$PCUSER" | grep -c -E "( sudo )|( sudo$)")" -eq 1 ];then
 				#si l'utilisateur fait parti du group sudo on l'ajoute sans filtrage par default.
 				echo "$PCUSER" >> $FILE_GCTOFFCONF
 			else
@@ -1526,27 +1536,28 @@ updatelistgctoff () {
 		fi
 	done
 	## on supprime tout ceux qui n'existent plus sur le pc.
-	for PCUSER in $(cat $FILE_GCTOFFCONF | sed -e "s/#//g" )
+	while read PCUSER
 	do
-		if [ $( listeusers | grep -c -E "^$PCUSER$") -eq 0 ];then
+		PCUSER=${PCUSER//#/} 
+		if [ "$( listeusers | grep -c -E "^$PCUSER$")" -eq 0 ];then
 			result="1"
-			$SED "/^$PCUSER$/d" $FILE_GCTOFFCONF
-			$SED "/^#$PCUSER$/d" $FILE_GCTOFFCONF
+			$SED "/^$PCUSER$/d" "$FILE_GCTOFFCONF"
+			$SED "/^#$PCUSER$/d" "$FILE_GCTOFFCONF"
 		fi
-	done
+	done < $FILE_GCTOFFCONF
 	echo $result
 	
 }
 applistegctoff () {
 		$ADDUSERTOGROUP root ctoff 2> /dev/null
-		for PCUSER in $(cat $FILE_GCTOFFCONF )
+		while read PCUSER
 		do
-			if [ $(echo $PCUSER | grep -c -v "#") -eq 1 ];then
-				$ADDUSERTOGROUP $PCUSER ctoff 2> /dev/null
+			if [ "$(echo "$PCUSER" | grep -c -v "#")" -eq 1 ];then
+				$ADDUSERTOGROUP "$PCUSER" ctoff 2> /dev/null
 			else
-				$DELUSERTOGROUP $(echo $PCUSER | sed -e "s/#//g" ) ctoff 2> /dev/null
+				$DELUSERTOGROUP "${PCUSER//#/}" ctoff 2> /dev/null
 			fi
-		done 
+		done < "$FILE_GCTOFFCONF"
 	
 
 }
@@ -1557,10 +1568,10 @@ echo "<activegourpectoff>"
    $SED "s?^GCTOFF.*?GCTOFF=ON?g" $FILE_CONF
    updatelistgctoff
    applistegctoff
-   USERHTTPD=$(cat /etc/passwd | grep /var/www | cut -d":" -f1)
-   GROUPHTTPD=$(cat /etc/group | grep $USERHTTPD | cut -d":" -f1)
-   chown root:$GROUPHTTPD $FILE_GCTOFFCONF
-   chmod 660 $FILE_GCTOFFCONF
+   USERHTTPD=$(cat < /etc/passwd | grep /var/www | cut -d":" -f1)
+   GROUPHTTPD=$(cat < /etc/group | grep "$USERHTTPD" | cut -d":" -f1)
+   chown root:"$GROUPHTTPD" "$FILE_GCTOFFCONF"
+   chmod 660 "$FILE_GCTOFFCONF"
    echo "PATH=$PATH"  > /etc/cron.d/CTparentalupdateuser
    echo "*/1 * * * * root /usr/local/bin/CTparental.sh -ucto" >> /etc/cron.d/CTparentalupdateuser
    $CRONrestart
@@ -1576,13 +1587,13 @@ uninstall () {
    # On force la désinstall par dpkg ou rpm si l'install a était effectuer par un paquage.
    if [ $nomanuel -eq 0 ]; then 
 	   muninstall=$(gettext "Install a packet was detected please use this command to uninstall ctparental.")
-	   if [ $(dpkg -l ctparental | grep -c ^i) -eq 1 ] ;then
+	   if [ "$(dpkg -l ctparental | grep -c ^i)" -eq 1 ] ;then
 			echo "$muninstall"
 			echo "$CMDREMOVE ctparental"
 			exit 0
 	   fi
-	   if [ $(rpm -q -a | grep ctparental ) -eq 1 ] ;then
-			echo $muninstall
+	   if [ "$(rpm -q -a | grep ctparental )" -eq 1 ] ;then
+			echo "$muninstall"
 			echo "$CMDREMOVE ctparental"
 			exit 0
 	   fi
@@ -1597,24 +1608,27 @@ uninstall () {
    if [ $nomanuel -eq 1 ]; then 
 	   # en install par le deb on n'efface pas les fichiers installer par celuis si
        rm -f /etc/cron.d/CTparental*
-       rm -rf $DIRHTML
+       rm -rf "$DIRHTML"
        rm -rf /usr/local/share/CTparental
-       for file in $(ls $DIR_CONF | grep -v dist.conf)
+       cd "$DIR_CONF"
+       for file in *
        do
-		  rm -rf $DIR_CONF/$(ls $DIR_CONF | grep -v dist.conf)
+		  if [ ! "$file" = "" ] ;then
+		  rm -rf ${DIR_CONF:?}/"$file"
+		  fi
        done
        
    else 
        rm -f /etc/cron.d/CTparental*
-       rm -rf $DIRadminHTML
-       rm -rf $DIRHTML
+       rm -rf "$DIRadminHTML"
+       rm -rf "$DIRHTML"
        rm -rf /usr/local/share/CTparental
-       rm -rf $DIR_CONF
+       rm -rf "$DIR_CONF"
    fi
    
-   rm -rf $tempDIR
+   rm -rf "$tempDIR"
    rm -rf /usr/share/lighttpd/*
-   rm -f $CTPARENTALCONFHTTPD
+   rm -f "$CTPARENTALCONFHTTPD"
    if [ -f /etc/NetworkManager/NetworkManager.conf ];then
 	$SED "s/^#dns=dnsmasq/dns=dnsmasq/g" /etc/NetworkManager/NetworkManager.conf
 	$NWMANAGERrestart
@@ -1625,34 +1639,35 @@ uninstall () {
 	 for PACKAGECT in $DEPENDANCES
          do
 			
-			$CMDREMOVE $PACKAGECT 2> /dev/null
+			$CMDREMOVE "$PACKAGECT" 2> /dev/null
          done
    fi
    # desactivation du modules ip_conntrack_ftp
-	test=`grep ip_conntrack_ftp $FILEMODULESLOAD |wc -l`
-	if [ $test -ge "1" ] ; then
-		$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" $FILEMODULESLOAD
+
+	if [ "$(grep -c ip_conntrack_ftp "$FILEMODULESLOAD" )" -ge "1" ] ; then
+		$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" "$FILEMODULESLOAD"
 	else
-		echo "#ip_conntrack_ftp" >> $FILEMODULESLOAD
+		echo "#ip_conntrack_ftp" >> "$FILEMODULESLOAD"
 	fi
 	modprobe -r ip_conntrack_ftp	
-	$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" $FILEMODULESLOAD
+	$SED "s?.*ip_conntrack_ftp.*?#ip_conntrack_ftp?g" "$FILEMODULESLOAD"
 	###
 
-   rm -f $PEMSRVDIR/localhost.pem
-   rm -f $PEMSRVDIR/duckduckgo.pem
-   rm -f $CADIR/cactparental.crt
-   rm -f $REPCAMOZ/cactparental.crt
-   for user in `listeusers` ; do	
+   rm -f "$PEMSRVDIR"/localhost.pem
+   rm -f "$PEMSRVDIR"/duckduckgo.pem
+   rm -f "$CADIR"/cactparental.crt
+   rm -f "$REPCAMOZ"/cactparental.crt
+   for user in $(listeusers) ; do	
 		HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-		if [ -d $HOMEPCUSER ];then
+		if [ -d "$HOMEPCUSER" ];then
 			#on desinstall le certificat dans tous les prifiles firefoxe utilisateur existant 
-			for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
+			listprofile=$(cat < "$HOMEPCUSER"/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2)
+			for profilefirefox in $listprofile ; do
 				#firefox iceweachel
 				# on supprime tous les anciens certificats
 				while true
 				do
-					certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
+					certutil -D -d "$HOMEPCUSER"/.mozilla/firefox/"$profilefirefox"/ -n"CActparental - ctparental" 2&> /dev/null
 					if [ ! $? -eq 0 ];then 
 						break
 					fi
@@ -1666,23 +1681,23 @@ uninstall () {
 choiblenabled () {
 echo -n > $CATEGORIES_ENABLED
 clear
-echo $(gettext "Want to filter by, Blacklist or Whitelist:")
+gettext 'Want to filter by, Blacklist or Whitelist:'
 echo -n " B/W :"
 while (true); do
          read choi
          case $choi in
          B | b )
-         echo $(gettext "Choice of filtered categories.")
-		for CATEGORIE in `cat  $BL_CATEGORIES_AVAILABLE`  # pour chaque catégorie
+         gettext 'Choice of filtered categories.'
+        while read CATEGORIE # pour chaque catégorie 
 		do   
 		      clear
-		      echo $(gettext "You want to enable this category:")
+		      gettext 'You want to enable this category:'
 		      echo -n " $CATEGORIE  O/N :"
 		      while (true); do
 			 read choi
 			 case $choi in
 			 O | o )
-			 echo $CATEGORIE >> $CATEGORIES_ENABLED
+			 echo "$CATEGORIE" >> "$CATEGORIES_ENABLED"
 			 break
 			 ;;
 			 N | n )
@@ -1690,21 +1705,21 @@ while (true); do
 			 ;;
 		      esac
 		      done
-		done
+		done < $BL_CATEGORIES_AVAILABLE
          break
          ;;
          W | w )
-               echo $(gettext "Choice of unfiltered categories.")
-		for CATEGORIE in `cat  $WL_CATEGORIES_AVAILABLE`  # pour chaque catégorie
+               gettext 'Choice of unfiltered categories.'
+        while read CATEGORIE # pour chaque catégorie
 		do   
 		      clear
-		      echo $(gettext "You want to enable this category:")
+		      gettext 'You want to enable this category:'
 		      echo -n " $CATEGORIE  O/N :"
 		      while (true); do
 			 read choi
 			 case $choi in
 			 O | o )
-			 echo $CATEGORIE >> $CATEGORIES_ENABLED
+			 echo "$CATEGORIE" >> "$CATEGORIES_ENABLED"
 			 break
 			 ;;
 			 N | n )
@@ -1712,7 +1727,7 @@ while (true); do
 			 ;;
 		      esac
 		      done
-		done
+		done < $WL_CATEGORIES_AVAILABLE
          break
          ;;
       esac
@@ -1747,44 +1762,45 @@ MinAlert=${1} # temps en minute entre l'alerte et l'action
 H=$((10#${2}))
 M=$((10#${3}))
 D=$((10#${4}))
-MinTotalAlert="$(($H*60+$M-$MinAlert))"
-if [ $(( $MinTotalAlert < 0 )) -eq 1 ] 
+Numday=${Numday:=1}
+MinTotalAlert="$((H*60+M-MinAlert))"
+if [ $(( MinTotalAlert < 0 )) -eq 1 ] 
 then
-	if [ $Numday -eq 0 ] ; then
+	if [ "$Numday" -eq 0 ] ; then
 		D=6
 	else
-		D=$(( $D -1 ))
+		D=$(( D -1 ))
 	fi
-	MinTotalAlert="$(($(($H + 24))*60+$M-$MinAlert))"
+	MinTotalAlert="$(( $((H + 24)) * 60 + M - MinAlert))"
 fi
-Halert=$(($MinTotalAlert/60))
-MAlert=$(($MinTotalAlert - $(( $Halert *60 )) ))
+Halert=$((MinTotalAlert/60))
+MAlert=$((MinTotalAlert - $(( Halert *60 )) ))
 echo "$MAlert $Halert * * ${DAYSCRON[$D]}"
 }
 updatetimelogin () {
 	USERSCONECT=$(who | awk '//{print $1}' | sort -u)
-   	if [ $(cat $FILE_HCOMPT | grep -c $(date +%D)) -eq 1 ] ; then
+   	if [ "$(cat < $FILE_HCOMPT | grep -c "$(date +%D)")" -eq 1 ] ; then
 			# on incrémente le compteur de temps de connection. pour chaque utilisateur connecté
 		for PCUSER in $USERSCONECT
 		do
 		
-			if [ $(cat $FILE_HCONF | grep -c ^$PCUSER=user= ) -eq 1 ] ;then
-			   if [ $(cat $FILE_HCOMPT | grep -c ^$PCUSER= ) -eq 0 ] ;then
+			if [ "$(cat < $FILE_HCONF | grep -c "^$PCUSER=user=" )" -eq 1 ] ;then
+			   if [ "$(cat < $FILE_HCOMPT | grep -c "^$PCUSER=" )" -eq 0 ] ;then
 					echo "$PCUSER=1" >> $FILE_HCOMPT
 			   else
-					count=$(($(cat $FILE_HCOMPT | grep ^$PCUSER= | cut -d"=" -f2) + 1 ))
+					count=$(($(cat < $FILE_HCOMPT | grep "^$PCUSER=" | cut -d"=" -f2) + 1 ))
 					$SED "s?^$PCUSER=.*?$PCUSER=$count?g" $FILE_HCOMPT
-					temprest=$(($(cat $FILE_HCONF | grep ^$PCUSER=user= | cut -d "=" -f3 ) - $count ))
+					temprest=$(($(cat < $FILE_HCONF | grep "^$PCUSER=user=" | cut -d "=" -f3 ) - count ))
 					echo $temprest
 					# si le compteur de l'usager dépasse la valeur max autorisée on verrouille le compte et on déconnecte l'utilisateur.
 					if [ $temprest -le 0 ];then
-						/usr/bin/skill -KILL -u$PCUSER
-						passwd -l $PCUSER
+						/usr/bin/skill -KILL -u"$PCUSER"
+						passwd -l "$PCUSER"
 					else
 						# On alerte l'usager que son quota temps arrive à expiration 5-4-3-2-1 minutes avant.
 						if [ $temprest -le 10 ];then
 						HOMEPCUSER=$(getent passwd "$PCUSER" | cut -d ':' -f6)
-						export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical "Alerte CTparental" "Votre temps de connexion restant est de $temprest minutes "
+						export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u "$PCUSER"  /usr/bin/notify-send -u critical "Alerte CTparental" "Votre temps de connexion restant est de $temprest minutes "
 						fi
 					fi
 			   fi
@@ -1797,9 +1813,9 @@ updatetimelogin () {
 		done	
 	else
 		# on réactive tous les comptes
-		for PCUSER in `listeusers`
+		for PCUSER in $(listeusers)
 		do
-			passwd -u $PCUSER
+			passwd -u "$PCUSER"
 		done
 		# on remet tous les compteurs à zéro.
 		echo "date=$(date +%D)" > $FILE_HCOMPT
@@ -1810,23 +1826,23 @@ updatetimelogin () {
 requiredpamtime (){
 	TESTGESTIONNAIRE=""
    if [ ! -f $DIRPAM$COMMONFILEGS ] ; then 
-	   for FILE in `echo $GESTIONNAIREDESESSIONS`
+	   for FILE in $GESTIONNAIREDESESSIONS
 	   do
-		  if [ -f $DIRPAM$FILE ];then
-			 if [ $(cat $DIRPAM$FILE | grep -c "^account required pam_time.so") -eq 0  ] ; then
-				$SED "1i account required pam_time.so"  $DIRPAM$FILE
+		  if [ -f "$DIRPAM""$FILE" ];then
+			 if [ "$(cat < "$DIRPAM""$FILE" | grep -c "^account required pam_time.so")" -eq 0  ] ; then
+				$SED "1i account required pam_time.so"  "$DIRPAM$FILE"
 			 fi
-			 TESTGESTIONNAIRE=$TESTGESTIONNAIRE\ $FILE
+			 TESTGESTIONNAIRE=1
 		  fi
 	   done
-	   if [ $( echo $TESTGESTIONNAIRE | wc -m ) -eq 1 ] ; then
-		  echo $(gettext "No known session manager has been detected.")
-		  echo " $(gettext "so it is impossible to activate the time control connections")"
+	   if [ $TESTGESTIONNAIRE -eq 1 ] ; then
+		  gettext 'No known session manager has been detected.'
+		  gettext 'so it is impossible to activate the time control connections'
 		  desactivetimelogin
 		  exit 1
 	   fi
 	else
-		if [ $(cat $DIRPAM$COMMONFILEGS | grep -c "^account required pam_time.so") -eq 0  ] ; then
+		if [ "$(cat < "$DIRPAM""$COMMONFILEGS" | grep -c "^account required pam_time.so")" -eq 0  ] ; then
 				$SED "1i account required pam_time.so"  $DIRPAM$COMMONFILEGS 
 		fi
 	fi
@@ -1840,9 +1856,9 @@ activetimelogin () {
 requiredpamtime
    for NumDAY in 0 1 2 3 4 5 6
    do
-   echo "PATH=$PATH"  > /etc/cron.d/CTparental${DAYS[$NumDAY]}
+   echo "PATH=$PATH"  > /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
    done
-   for PCUSER in `listeusers`
+   for PCUSER in $(listeusers)
    do
    HOMEPCUSER=$(getent passwd "$PCUSER" | cut -d ':' -f6)
    $SED "/^$PCUSER=/d" $FILE_HCONF
@@ -1863,8 +1879,8 @@ requiredpamtime
          echo -e -n "X (1 a 1440) = " 
          while (true); do
          read choi
-         if [ $choi -ge 1 ];then
-			if [ $choi -le 1440 ];then
+         if [ "$choi" -ge 1 ];then
+			if [ "$choi" -le 1440 ];then
 				break
 			fi
 		 fi	
@@ -1875,7 +1891,7 @@ requiredpamtime
          ;;	
    esac
    done
-      HORAIRES=""
+      
       for NumDAY in 0 1 2 3 4 5 6
          do
 	 if [ $alltime = "O" ];then	
@@ -1892,55 +1908,55 @@ requiredpamtime
          while (true); do
             read choi
             input=$choi
-            choi=$(echo $choi | sed -e "s/$h//g" | sed -e "s/ //g" | sed -e "s/$at/-/g" | sed -e "s/$and/:/g" ) # mise en forme de la variable choi pour pam   
-               if [ $( echo $choi | grep -E -c "^([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]$|^([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]:([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]$" ) -eq 1 ];then
-                  int1=$(echo $choi | cut -d ":" -f1 | cut -d "-" -f1)
-                  int2=$(echo $choi | cut -d ":" -f1 | cut -d "-" -f2)
-                  int3=$(echo $choi | cut -d ":" -f2 | cut -d "-" -f1)
-                  int4=$(echo $choi | cut -d ":" -f2 | cut -d "-" -f2)
-                  if [ $int1 -lt $int2 ];then
-                     if [ ! $(echo $choi | grep -E -c ":") -eq 1 ] ; then
-                        if [ $NumDAY -eq 6 ] ; then
+            choi=$(echo "$choi" | sed -e "s/$h//g" | sed -e "s/ //g" | sed -e "s/$at/-/g" | sed -e "s/$and/:/g" ) # mise en forme de la variable choi pour pam   
+               if [ "$( echo "$choi" | grep -E -c "^([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]$|^([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]:([0-1][0-9]|2[0-3])[0-5][0-9]-([0-1][0-9]|2[0-3])[0-5][0-9]$" )" -eq 1 ];then
+                  int1=$(echo "$choi" | cut -d ":" -f1 | cut -d "-" -f1)
+                  int2=$(echo "$choi" | cut -d ":" -f1 | cut -d "-" -f2)
+                  int3=$(echo "$choi" | cut -d ":" -f2 | cut -d "-" -f1)
+                  int4=$(echo "$choi" | cut -d ":" -f2 | cut -d "-" -f2)
+                  if [ "$int1" -lt "$int2" ];then
+                     if [ ! "$(echo "$choi" | grep -E -c ":")" -eq 1 ] ; then
+                        if [ "$NumDAY" -eq 6 ] ; then
                            HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$int1-$int2"
                         else
                            HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$int1-$int2|"
                         fi
-                        m1=$(echo $int1 | sed -e 's/.\{02\}//')
-                        h1=$(echo $int1 | sed -e 's/.\{02\}$//') 
-                        m2=$(echo $int2 | sed -e 's/.\{02\}//')
-                        h2=$(echo $int2 | sed -e 's/.\{02\}$//')
-						echo "$PCUSER=$NumDAY=$h1${h}h$m1:$h2${h}h$m2" >> $FILE_HCONF   
-                        echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+                        m1=${int1:2:4} 
+                        h1=${int1:0:2}
+                        m2=${int2:2:4} 
+                        h2=${int2:0:2}
+						echo "$PCUSER=$NumDAY=$h1${h}h$m1:$h2${h}h$m2" >> "$FILE_HCONF"   
+                        echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 			for count in 1 2 3 4 5
 			do
-                        echo "$(timecronalert $count $h2 $m2 $NumDAY) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+                        echo "$(timecronalert "$count" "$h2" "$m2" "$NumDAY" ) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 			done
                         break
    
                      else   
-                        if [ $int2 -lt $int3 ];then
-                           if [ $int3 -lt $int4 ];then
-                              if [ $NumDAY -eq 6 ] ; then
+                        if [ "$int2" -lt "$int3" ];then
+                           if [ "$int3" -lt "$int4" ];then
+                              if [ "$NumDAY" -eq 6 ] ; then
                                  HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$int1-$int2|${DAYSPAM[$NumDAY]}$int3-$int4"
                               else
                                  HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$int1-$int2|${DAYSPAM[$NumDAY]}$int3-$int4|"
                               fi
-                              m1=$(echo $int1 | sed -e 's/.\{02\}//')
-                              h1=$(echo $int1 | sed -e 's/.\{02\}$//')   
-                              m2=$(echo $int2 | sed -e 's/.\{02\}//')
-                              h2=$(echo $int2 | sed -e 's/.\{02\}$//')  
-                              m3=$(echo $int3 | sed -e 's/.\{02\}//')
-                              h3=$(echo $int3 | sed -e 's/.\{02\}$//')   
-                              m4=$(echo $int4 | sed -e 's/.\{02\}//')
-                              h4=$(echo $int4 | sed -e 's/.\{02\}$//')   
+								m1=${int1:2:4} 
+								h1=${int1:0:2}
+								m2=${int2:2:4} 
+								h2=${int2:0:2} 
+								m3=${int3:2:4} 
+								h3=${int3:0:2}
+								m4=${int4:2:4} 
+								h4=${int4:0:2} 
                               ## minutes heures jourdumoi moi jourdelasemaine utilisateur  commande
-							  echo "$PCUSER=$NumDAY=$h1${h}h$m1:$h2${h}h$m2:$h3${h}h$m3:$h4${h}h$m4" >> $FILE_HCONF
-                              echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
-			      echo "$m4 $h4 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+							  echo "$PCUSER=$NumDAY=$h1${h}h$m1:$h2${h}h$m2:$h3${h}h$m3:$h4${h}h$m4" >> "$FILE_HCONF"
+                              echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
+			      echo "$m4 $h4 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 			      for count in 1 2 3 4 5
 			      do
-                              echo "$(timecronalert $count $h2 $m2 $NumDAY) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
-                              echo "$(timecronalert $count $h4 $m4 $NumDAY) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes\" " >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+                              echo "$(timecronalert "$count" "$h2" "$m2" "$NumDAY" ) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
+                              echo "$(timecronalert "$count" "$h4" "$m4" "$NumDAY" ) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes\" " >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 			      done
                              
                               break   
@@ -1972,7 +1988,7 @@ requiredpamtime
    
    for NumDAY in 0 1 2 3 4 5 6
    do
-      echo >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+      echo >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
    done
    echo >> $FILE_HCONF
 echo "PATH=$PATH"  > /etc/cron.d/CTparentalmaxtimelogin
@@ -1983,22 +1999,22 @@ $CRONrestart
 
 desactivetimelogin () {
 echo "<desactivetimelogin>"
-for FILE in `echo $GESTIONNAIREDESESSIONS`
+for FILE in $GESTIONNAIREDESESSIONS
 do
-   $SED "/account required pam_time.so/d" $DIRPAM$FILE 2> /dev/null
+   $SED "/account required pam_time.so/d" "$DIRPAM""$FILE" 2> /dev/null
 done
-$SED "/account required pam_time.so/d" $DIRPAM$COMMONFILEGS 2> /dev/null
+$SED "/account required pam_time.so/d" "$DIRPAM""$COMMONFILEGS" 2> /dev/null
 
 cat $FILEPAMTIMECONF.old > $FILEPAMTIMECONF
 for NumDAY in 0 1 2 3 4 5 6
 do
-   rm -f /etc/cron.d/CTparental${DAYS[$NumDAY]}
+   rm -f /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 done
 rm -f /etc/cron.d/CTparentalmaxtimelogin
 $SED "s?^HOURSCONNECT.*?HOURSCONNECT=OFF?g" $FILE_CONF 
-for PCUSER in `listeusers`
+for PCUSER in $(listeusers)
 do
-	passwd -u $PCUSER > /dev/null
+	passwd -u "$PCUSER" > /dev/null
 done
 # on remet tous les compteurs à zéro.
 echo "date=$(date +%D)" > $FILE_HCOMPT
@@ -2009,12 +2025,12 @@ echo "</desactivetimelogin>"
 
 
 listeusers () {
-TABUSER=( " $(getent passwd | cut -d":" -f1,3) " )
+TABUSER=$( " $(getent passwd | cut -d":" -f1,3) " )
 for LIGNES in $TABUSER
 do
 #echo $(echo $LIGNES | cut -d":" -f2)
-if [ $(echo $LIGNES | cut -d":" -f2) -ge $UIDMINUSER ] ;then
-	echo $LIGNES | cut -d":" -f1
+if [ "$(echo "$LIGNES" | cut -d":" -f2)" -ge "$UIDMINUSER" ] ;then
+	echo "$LIGNES" | cut -d":" -f1
 fi
 done
 
@@ -2026,10 +2042,10 @@ readTimeFILECONF () {
    requiredpamtime
    for NumDAY in 0 1 2 3 4 5 6
    do
-   echo "PATH=$PATH" > /etc/cron.d/CTparental${DAYS[$NumDAY]}
+   echo "PATH=$PATH" > /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
    done
    
-   for PCUSER in `listeusers`
+   for PCUSER in $(listeusers)
    do
    HOMEPCUSER=$(getent passwd "$PCUSER" | cut -d ':' -f6)
    HORAIRESPAM=""
@@ -2038,44 +2054,44 @@ readTimeFILECONF () {
 	while read line
 	do
 	
-			if [ $( echo $line | grep -E -c "^$PCUSER=[0-6]=" ) -eq 1 ] ; then
+			if [ "$( echo "$line" | grep -E -c "^$PCUSER=[0-6]=" )" -eq 1 ] ; then
 				echo "$line" 
-				NumDAY=$(echo $line | cut -d"=" -f2)
-				h1=$(echo $line | cut -d"=" -f3 | cut -d":" -f1 | cut -d"h" -f1)
-				m1=$(echo $line | cut -d"=" -f3 | cut -d":" -f1 | cut -d"h" -f2)
-				h2=$(echo $line | cut -d"=" -f3 | cut -d":" -f2 | cut -d"h" -f1)
-				m2=$(echo $line | cut -d"=" -f3 | cut -d":" -f2 | cut -d"h" -f2)
-				h3=$(echo $line | cut -d"=" -f3 | cut -d":" -f3 | cut -d"h" -f1)
-				m3=$(echo $line | cut -d"=" -f3 | cut -d":" -f3 | cut -d"h" -f2)
-				h4=$(echo $line | cut -d"=" -f3 | cut -d":" -f4 | cut -d"h" -f1)
-				m4=$(echo $line | cut -d"=" -f3 | cut -d":" -f4 | cut -d"h" -f2)
-				if [ $(echo -n $h3$m3 | wc -c) -gt 2 ]; then
- 					if [ $NumDAY -eq 6 ] ; then
+				NumDAY=$(echo "$line" | cut -d"=" -f2)
+				h1=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f1 | cut -d"h" -f1)
+				m1=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f1 | cut -d"h" -f2)
+				h2=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f2 | cut -d"h" -f1)
+				m2=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f2 | cut -d"h" -f2)
+				h3=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f3 | cut -d"h" -f1)
+				m3=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f3 | cut -d"h" -f2)
+				h4=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f4 | cut -d"h" -f1)
+				m4=$(echo "$line" | cut -d"=" -f3 | cut -d":" -f4 | cut -d"h" -f2)
+				if [ "$(echo -n "$h3""$m3" | wc -c)" -gt 2 ]; then
+ 					if [ "$NumDAY" -eq 6 ] ; then
 		                        	HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$h1$m1-$h2$m2|${DAYSPAM[$NumDAY]}$h3$m3-$h4$m4"
 						
 		                      	else
 		                        	HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$h1$m1-$h2$m2|${DAYSPAM[$NumDAY]}$h3$m3-$h4$m4|"
 		                      	fi
-					echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
-					echo "$m4 $h4 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+					echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
+					echo "$m4 $h4 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 					for count in 1 2 3 4 5 6 7 8 9 10
 					do
-					echo "$(timecronalert $count $h2 $m2 $NumDAY) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
-					echo "$(timecronalert $count $h4 $m4 $NumDAY) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+					echo "$(timecronalert "$count" "$h2" "$m2" "$NumDAY" ) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
+					echo "$(timecronalert "$count" "$h4" "$m4" "$NumDAY" ) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 					userisconfigured="1"
 					done
 
 				else
-				        if [ $NumDAY -eq 6 ] ; then
+				        if [ "$NumDAY" -eq 6 ] ; then
 				           HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$h1$m1-$h2$m2"
 				        else
 				           HORAIRESPAM="$HORAIRESPAM${DAYSPAM[$NumDAY]}$h1$m1-$h2$m2|"
 				        fi
 					for count in 1 2 3 4 5 6 7 8 9 10
 					do
-					echo "$(timecronalert $count $h2 $m2 $NumDAY) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+					echo "$(timecronalert "$count" "$h2" "$m2" "$NumDAY" ) root export HOME=$HOMEPCUSER && export DISPLAY=:0.0 && export XAUTHORITY=$HOMEPCUSER/.Xauthority && sudo -u $PCUSER  /usr/bin/notify-send -u critical \"Alerte CTparental\" \"fermeture de session dans $count minutes \" " >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 					done
-					echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental${DAYS[$NumDAY]}
+					echo "$m2 $h2 * * ${DAYSCRON[$NumDAY]} root /usr/bin/skill -KILL -u$PCUSER" >> /etc/cron.d/CTparental"${DAYS[$NumDAY]}"
 					
 					userisconfigured="1"
 				fi
@@ -2088,7 +2104,7 @@ readTimeFILECONF () {
 	else
 		echo "*;*;$PCUSER;Al0000-2400" >> $FILEPAMTIMECONF 
 		$SED "/^$PCUSER=/d" $FILE_HCOMPT 
-		passwd -u $PCUSER
+		passwd -u "$PCUSER"
 	fi
    done
 echo "PATH=$PATH"  > /etc/cron.d/CTparentalmaxtimelogin  
@@ -2098,79 +2114,80 @@ $CRONrestart
 }
 
 confgrub2() {
+	
 PTNlogin='^[a-zA-Z]*$'
-## on passe en keymap us pour le password comme sa quelque soit votre clavier le mot de passe correspond bien au touche fraper.
-## on a donc plus besoins de ce prendre la tète pour le clavier avec le mot de pass grub.
+##Passage en keymap us pour le password comme sa quelque soit votre clavier le mot de passe correspond bien ##au touche frappée.ce qui, ce qui évite de ce prendre la tête pour le clavier avec le mot de passe grub.
 setxkbmap us
 clear
-echo $(gettext "keymap is in qwerty us in grub menu.")
-echo $(gettext "	- Only letters or numbers.")
-echo $(gettext "	- 4 characters minimum.") 
-echo -n $(gettext "Enter login to the superuser of grub2 :")
+gettext 'keymap is in qwerty us in grub menu.
+    - Only letters or numbers.
+    - 4 characters minimum.
+Enter login to the superuser of grub2 :'
 while (true); do
-	read logingrub
-	if [ $(expr $logingrub : $PTNlogin) -gt 4  ];then 
-		break
-	else
-		clear
-		echo $(gettext "keymap is in qwerty us in grub menu.")
-		echo $(gettext "	- Only letters or numbers.")
-		echo $(gettext "	- 4 characters minimum.") 
-		echo -n $(gettext "Enter login to the superuser of grub2 :")
-	fi	
+    read logingrub
+    if [ "$(expr "$logingrub" : "$PTNlogin")" -gt 4  ];then 
+        break
+    else
+        clear
+gettext 'keymap is in qwerty us in grub menu.
+    - Only letters or numbers.
+    - 4 characters minimum.
+Enter login to the superuser of grub2 :'
+    fi    
 done
 echo > /tmp/passgrub
-
-setxkbmap ${LANG:0:2}
-
-while [ $(awk '{print $NF}' /tmp/passgrub | grep -c grub.) -eq 0 ]
-do
+while [ "$(awk '{print $NF}' /tmp/passgrub | grep -c grub.)" -eq 0 ];do
 grub-mkpasswd-pbkdf2 | tee /tmp/passgrub
-done	
+done    
 passwordgrub=$(awk '{print $NF}' /tmp/passgrub | grep grub.)
- # on rebascule sur la keymap system.
+##on rebascule sur la keymap system
+setxkbmap "$(echo "$LANG" | awk -F "_" '{print $1}')"
 vide=""
 cat << EOF > /etc/grub.d/99_password
 #!/bin/sh
-## ce scripte doit ètre lancer en dernier !!!
-## on réstrent uniquement les menus de configuration uefi ou de recovery mode ###
-## ainssi que tous les submenu.
-## seul les menuentry et submenu de premier niveaux prènnent en compte les parramètres d'acces utilisateurs.
-## ce qui implique que l'ajout de --unrestricted a un submenu et recursive !!
+## ce script doit être lancé en dernier !!!
+## on restreint uniquement les menus de "setup uefi" , " recovery mode "
+## ainsi que tous les submenu.
+## seul les menuentry et submenu de premier niveaux prennent en compte les paramètres d’accès utilisateurs.
+## ce qui implique que l'ajout de --unrestricted a un submenu et récursif  !!
 cat << ${vide}EOF
 set superusers="$logingrub"
 password_pbkdf2 $logingrub $passwordgrub
 ${vide}EOF
-
 confunrestricted() {
-		## fonction lancer en tache de fond par la commande
-		## confunrestricted &
-		## elle attend la fin de l'éxecution de tous les scripte update grub 
-		## puis modifis le fichier /boot/grub/grub.cfg pour y ajouter le droits a touts le monde
-		## de lancer tous les entrée grub sauf le setup uefi et les recovery mode.
-		## tout les submenu sont bloquer par defaut 
-		processupdategrub=\$(echo \$(ls -1 /etc/grub.d/ | grep -E "^[0-9][0-9]_") | sed -e "s/ /,/g")
-		while [ \$(ps -C \$processupdategrub -o pid= | wc -l) -gt 2 ]
-		do
-			sleep 0.2
-		done
-		
-		while read linecfg 
-		do
-			if [ \$(echo "\$linecfg" | grep -E "menuentry " | grep -v "uefi-firmware" | grep -c -v "recovery mode" ) -eq 1 ];then
-				line2=\$(echo "\$linecfg" | sed -e 's/ {/ --unrestricted { /g')
-				sed -i "s|\$linecfg|\$line2|" /boot/grub/grub.cfg
-			fi
-		done < /boot/grub/grub.cfg
-	}
-
+        ## fonction lancer en tache de fond par la commande
+        ## confunrestricted &
+        ## elle attend la fin de l’exécution de tous les scripts  update grub 
+        ## puis modifie le fichier /boot/grub/grub.cfg pour y ajouter le droits a touts le monde
+        cd /etc/grub.d/
+        for file in *
+        do
+        if [ "\$(echo "\$file" | grep -E -c "[0-9][0-9]_")" -eq 1 ];then
+            if [ -z "\$processupdategrub" ] ; then
+                processupdategrub=\$file
+            else
+                processupdategrub=\$processupdategrub","\$file
+            fi
+        fi
+        done
+        while [ "\$(ps -C "\$processupdategrub" -o pid= | wc -l)" -gt 2 ]
+        do
+            sleep 0.2
+        done
+        cp /boot/grub/grub.cfg /tmp/grub.cfg.new
+        while read linecfg 
+        do
+            if [ "\$(echo "\$linecfg" | grep -E "menuentry " | grep -v "uefi-firmware" | grep -c -v "recovery mode" )" -eq 1 ];then
+                line2=\$(echo "\$linecfg" | sed -e 's/ {/ --unrestricted { /g')
+                sed -i "s|\$linecfg|\$line2|" /boot/grub/grub.cfg
+            fi
+        done < /tmp/grub.cfg.new
+        rm /tmp/grub.cfg.new
+    }
 confunrestricted &
-	
 EOF
 chmod 755 /etc/grub.d/99_password
-
 update-grub2
-
 
 }
 
@@ -2259,17 +2276,17 @@ case $arg1 in
       exit 0
       ;;
    -dl )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  download
 		  adapt
 		  catChoice
 		  dnsmasqon
-		  $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=`date +%d-%m-%Y\ %T`?g" $FILE_CONF
+		  $SED "s?^LASTUPDATE.*?LASTUPDATE=$THISDAYS=$(date +%d-%m-%Y\ %T)?g" $FILE_CONF
       fi
       exit 0
       ;;
    -ubl )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  adapt
 		  catChoice
 		  dnsmasqon
@@ -2282,7 +2299,7 @@ case $arg1 in
       exit 0
       ;;
    -rl )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
          catChoice
          dnsmasqon
       fi 
@@ -2301,13 +2318,13 @@ case $arg1 in
       exit 0
       ;;
    -wlo )
-	  if [ ! $FILTRAGEISOFF -eq 1 ];then
+	  if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  dnsmasqwhitelistonly
       fi
       exit 0
       ;;
    -cble )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  choiblenabled
 		  catChoice
 		  dnsmasqon
@@ -2315,7 +2332,7 @@ case $arg1 in
       exit 0
       ;;
     -dble )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  initblenabled
 		  catChoice
 		  dnsmasqon
@@ -2335,7 +2352,7 @@ case $arg1 in
       exit 0
       ;;
     -aupon )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		 autoupdateon
       fi
       exit 0
@@ -2345,7 +2362,7 @@ case $arg1 in
       exit 0
       ;;
     -aup )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		 autoupdate
       fi
       exit 0
@@ -2355,7 +2372,7 @@ case $arg1 in
       exit 0
       ;;
     -gcton )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  activegourpectoff
 		  iptablesreload
 	  fi
@@ -2367,16 +2384,15 @@ case $arg1 in
 	  exit 0
       ;;
     -gctulist )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		  updatelistgctoff
 		  iptablesreload
 	  fi
 	  exit 0
       ;;
     -gctalist )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
-		  test=$(updatelistgctoff)
-		  if [ $test -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
+		  if [ "$(updatelistgctoff)" -eq 1 ];then
 			updatecauser
 			setproxy
 		  fi
@@ -2405,10 +2421,10 @@ case $arg1 in
 	  exit 0
       ;;  
     -ucto )
-      if [ ! $FILTRAGEISOFF -eq 1 ];then
+      if [ ! "$FILTRAGEISOFF" -eq 1 ];then
 		 # appelé toutes les minutes par cron pour activer le filtrage sur les usagers nouvelement créé .
-		  test=$(updatelistgctoff)
-		  if [ $test -eq 1 ];then
+		 
+		  if [ "$(updatelistgctoff)" -eq 1 ];then
 			applistegctoff
 			updatecauser
 			setproxy
