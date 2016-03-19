@@ -822,62 +822,66 @@ ipglobal () {
 }
 initfileiptables () {
     touch "$FILEIPTABLES"
-	echo '' >> "${FILEIPTABLES}"
-	echo '## on autorise tous le trafic sortant à destination de notre lan (PC imprimante de la maison)' >> "${FILEIPTABLES}"
-	echo '$IPTABLES -A OUTPUT -d $reseau_box -j ACCEPT ' >> "${FILEIPTABLES}"
-	echo '## on acepte tous le trafic entrant en provenence de notre lan (PC imprimante de la maison)' >> "${FILEIPTABLES}"
-	echo '$IPTABLES -A INPUT -s $reseau_box -j ACCEPT  ' >> "${FILEIPTABLES}"
-    echo '' >> "${FILEIPTABLES}"
-    echo '### smtp + pop ssl thunderbird ...  ####' >> "${FILEIPTABLES}"
-	echo '$IPTABLES -A OUTPUT -p tcp -m tcp --dport 993 -j ACCEPT		# imap/ssl' >> "${FILEIPTABLES}"
-	echo '$IPTABLES -A OUTPUT -p tcp -m tcp --dport 995 -j ACCEPT		# pop/ssl' >> "${FILEIPTABLES}"
-	echo '$IPTABLES -A OUTPUT -p tcp -m tcp --dport 465 -j ACCEPT      # smtp/ssl' >> "${FILEIPTABLES}"
-	echo '' >> "${FILEIPTABLES}"
-	echo '# Ping Externe' >> "${FILEIPTABLES}"
-	echo '# $IPTABLES -A INPUT -i $interface_WAN -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT' >> "${FILEIPTABLES}"
-    echo '# $IPTABLES -A INPUT -i $interface_WAN -p icmp --icmp-type echo-reply -m limit --limit 1/s -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '' >> "${FILEIPTABLES}"
-	echo '### cups serveur , impriment partager sous cups' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT -d $ip_broadcast -p udp -m udp --sport 631 --dport 631 -j ACCEPT # diffusion des imprimantes partager sur le réseaux' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A INPUT -s $reseau_box -m state --state NEW -p TCP --dport 631 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -I INPUT -s $ipbox -m state --state NEW -p TCP --dport 631 -j DROP # drop les requette provenent de la passerelle' >> "${FILEIPTABLES}"
-    echo '' >> "${FILEIPTABLES}"
-    echo '### emesene,pidgin,amsn...  ####' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 1863 -j ACCEPT  ' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT -p udp -m udp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam' >> "${FILEIPTABLES}"
-	echo '' >> "${FILEIPTABLES}"
-    echo '###  smtp + pop thunderbird ...  ###' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 25 -j ACCEPT' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 110 -j ACCEPT' >> "${FILEIPTABLES}"
-    echo '### client-transmission' >> "${FILEIPTABLES}"
-    echo '# ouvre beaucoup de ports' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT -p udp -m udp --sport 51413 --dport 1023:65535  -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT -p tcp -m tcp --sport 30000:65535 --dport 1023:65535  -j ACCEPT' >> "${FILEIPTABLES}"
-    echo '###Ryzom' >> "${FILEIPTABLES}"
-	echo '#srvupdateRtzom=178.33.44.72' >> "${FILEIPTABLES}"
-	echo '#srvRyzom1=176.31.229.93' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d $srvupdateRtzom -p tcp --dport 873 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 43434 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 50000 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 40916 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p udp --dport 47851:47860 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 47851:47860 -j ACCEPT' >> "${FILEIPTABLES}"
-	echo '### Regnum Online' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT  -d 91.123.197.131 -p tcp --dport 47300 -j ACCEPT # autentification' >> "${FILEIPTABLES}"
-	echo '#$IPTABLES -A OUTPUT  -d 91.123.197.142 -p tcp --dport 48000:48002  -j ACCEPT # nemon' >> "${FILEIPTABLES}"
-    echo '### NeverWinter Nights 1' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT  -p udp --dport 5120:5121 -j ACCEPT' >> "${FILEIPTABLES}"
-    echo "#\$IPTABLES -I OUTPUT  -d 204.50.199.9 -j DROP # nwmaster.bioware.com permet d'éviter le temps d'attente avant l'ouverture du multijoueur " >> "${FILEIPTABLES}"
-    echo '### LandesEternelles' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT  -d 62.93.225.45 -p tcp --dport 3000 -j ACCEPT' >> "${FILEIPTABLES}"
-    echo '### Batel for Wesnoth' >> "${FILEIPTABLES}"
-    echo '#14998 pour version stable.' >> "${FILEIPTABLES}"
-    echo '#14999 pour version stable précédente.' >> "${FILEIPTABLES}"
-    echo '#15000 pour version de développement.' >> "${FILEIPTABLES}"
-    echo '#15001 télécharger addons' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A OUTPUT  -d 65.18.193.12 -p tcp --sport 1023:65535 --dport 14998:15001 -j ACCEPT' >> "${FILEIPTABLES}"
-    echo '#$IPTABLES -A INPUT   -p tcp --sport 1023:65535 --dport 15000 -j ACCEPT' >> "${FILEIPTABLES}"
+
+mssg="
+## on autorise tous le trafic sortant à destination de notre lan (PC imprimante de la maison)
+$IPTABLES -A OUTPUT -d $reseau_box -j ACCEPT
+## on acepte tous le trafic entrant en provenence de notre lan (PC imprimante de la maison)
+$IPTABLES -A INPUT -s $reseau_box -j ACCEPT
+
+### smtp + pop ssl thunderbird ...  ####
+$IPTABLES -A OUTPUT -p tcp -m tcp --dport 993 -j ACCEPT		# imap/ssl
+$IPTABLES -A OUTPUT -p tcp -m tcp --dport 995 -j ACCEPT		# pop/ssl
+$IPTABLES -A OUTPUT -p tcp -m tcp --dport 465 -j ACCEPT      # smtp/ssl
+
+# Ping Externe
+# $IPTABLES -A INPUT -i $interface_WAN -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT
+# $IPTABLES -A INPUT -i $interface_WAN -p icmp --icmp-type echo-reply -m limit --limit 1/s -j ACCEPT
+
+### cups serveur , impriment partager sous cups
+#$IPTABLES -A OUTPUT -d $ip_broadcast -p udp -m udp --sport 631 --dport 631 -j ACCEPT # diffusion des imprimantes partager sur le réseaux
+#$IPTABLES -A INPUT -s $reseau_box -m state --state NEW -p TCP --dport 631 -j ACCEPT
+#$IPTABLES -I INPUT -s $ipbox -m state --state NEW -p TCP --dport 631 -j DROP # drop les requette provenent de la passerelle
+
+### emesene,pidgin,amsn...  ####
+#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 1863 -j ACCEPT
+#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam
+#$IPTABLES -A OUTPUT -p udp -m udp --dport 6891:6900 -j ACCEPT # pour transfert de fichiers , webcam
+
+###  smtp + pop thunderbird ...  ###
+#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 25 -j ACCEPT
+#$IPTABLES -A OUTPUT -p tcp -m tcp --dport 110 -j ACCEPT
+### client-transmission
+# ouvre beaucoup de ports
+#$IPTABLES -A OUTPUT -p udp -m udp --sport 51413 --dport 1023:65535  -j ACCEPT
+#$IPTABLES -A OUTPUT -p tcp -m tcp --sport 30000:65535 --dport 1023:65535  -j ACCEPT
+###Ryzom
+#srvupdateRtzom=178.33.44.72
+#srvRyzom1=176.31.229.93
+#$IPTABLES -A OUTPUT  -d $srvupdateRtzom -p tcp --dport 873 -j ACCEPT
+#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 43434 -j ACCEPT
+#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 50000 -j ACCEPT
+#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 40916 -j ACCEPT
+#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p udp --dport 47851:47860 -j ACCEPT
+#$IPTABLES -A OUTPUT  -d $srvRyzom1 -p tcp --dport 47851:47860 -j ACCEPT
+### Regnum Online
+#$IPTABLES -A OUTPUT  -d 91.123.197.131 -p tcp --dport 47300 -j ACCEPT # autentification
+#$IPTABLES -A OUTPUT  -d 91.123.197.142 -p tcp --dport 48000:48002  -j ACCEPT # nemon
+### NeverWinter Nights 1
+#$IPTABLES -A OUTPUT  -p udp --dport 5120:5121 -j ACCEPT
+#$IPTABLES -I OUTPUT  -d 204.50.199.9 -j DROP # nwmaster.bioware.com permet d'éviter le temps d'attente avant l'ouverture du multijoueur
+### LandesEternelles
+#$IPTABLES -A OUTPUT  -d 62.93.225.45 -p tcp --dport 3000 -j ACCEPT
+### Batel for Wesnoth
+#14998 pour version stable.
+#14999 pour version stable précédente.
+#15000 pour version de développement.
+#15001 télécharger addons
+#$IPTABLES -A OUTPUT  -d 65.18.193.12 -p tcp --sport 1023:65535 --dport 14998:15001 -j ACCEPT
+#$IPTABLES -A INPUT   -p tcp --sport 1023:65535 --dport 15000 -j ACCEPT
+"
+    echo "${mssg}" > "${FILEIPTABLES}"
+
 	chown root:root "${FILEIPTABLES}"
 	chmod 0750 "${FILEIPTABLES}"
 
