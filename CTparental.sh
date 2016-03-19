@@ -1287,43 +1287,43 @@ $(gettext "and one special character among the following") &éè~#{}()ç_@à?.;:
     addadminhttpd "$loginhttp" "$password"
 }
 CActparental () {
-echo "<CActparental>"
-DIR_TMP=${TMPDIR-/tmp}/ctparental-mkcert.$$
-mkdir $DIR_TMP
-mkdir $CADIR 2> /dev/null
+    echo "<CActparental>"
+    DIR_TMP="${TMPDIR-/tmp}/ctparental-mkcert.$$"
+    mkdir "$DIR_TMP"
+    mkdir "$CADIR" 2> /dev/null
 
 ## création de la clef priver ca et du certificat ca
-openssl genrsa  1024 > $DIR_TMP/cactparental.key 2> /dev/null
-openssl req -new -x509 -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=CActparental" -days 10000 -key $DIR_TMP/cactparental.key > $DIR_TMP/cactparental.crt
+    openssl genrsa  1024 > "$DIR_TMP/cactparental.key" 2> /dev/null
+    openssl req -new -x509 -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=CActparental" -days 10000 -key "$DIR_TMP/cactparental.key" > "$DIR_TMP/cactparental.crt"
 
 ## création de la clef privée serveur localhost
-openssl genrsa 1024 > $DIR_TMP/localhost.key 2> /dev/null
+    openssl genrsa 1024 > "$DIR_TMP/localhost.key" 2> /dev/null
 ## création certificat localhost et signature par la ca
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=localhost" -key $DIR_TMP/localhost.key > $DIR_TMP/localhost.csr
-openssl x509 -req -in $DIR_TMP/localhost.csr -out $DIR_TMP/localhost.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAcreateserial -CAserial $DIR_TMP/ca.srl
+    openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=localhost" -key "$DIR_TMP/localhost.key" > "$DIR_TMP/localhost.csr"
+    openssl x509 -req -in "$DIR_TMP/localhost.csr" -out "$DIR_TMP/localhost.crt" -CA "$DIR_TMP/cactparental.crt" -CAkey "$DIR_TMP/cactparental.key" -CAcreateserial -CAserial "$DIR_TMP/ca.srl"
 
 ## création du certificat duckduckgo pour redirection vers safe.duckduckgo.com
-openssl genrsa 1024 > $DIR_TMP/duckduckgo.key 2> /dev/null
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=duckduckgo.com" -key $DIR_TMP/duckduckgo.key > $DIR_TMP/duckduckgo.csr
-openssl x509 -req -in $DIR_TMP/duckduckgo.csr -out $DIR_TMP/duckduckgo.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAserial $DIR_TMP/ca.srl
+    openssl genrsa 1024 > "$DIR_TMP/duckduckgo.key" 2> /dev/null
+    openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=duckduckgo.com" -key "$DIR_TMP/duckduckgo.key" > "$DIR_TMP/duckduckgo.csr"
+    openssl x509 -req -in "$DIR_TMP/duckduckgo.csr" -out "$DIR_TMP/duckduckgo.crt" -CA "$DIR_TMP/cactparental.crt" -CAkey "$DIR_TMP/cactparental.key" -CAserial "$DIR_TMP/ca.srl"
 
 ## création du certificat search.yahoo.com pour redirection vers pages d'interdiction
-openssl genrsa 1024 > $DIR_TMP/search.yahoo.com.key 2> /dev/null
-openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=search.yahoo.com" -key $DIR_TMP/search.yahoo.com.key > $DIR_TMP/search.yahoo.com.csr
-openssl x509 -req -in $DIR_TMP/search.yahoo.com.csr -out $DIR_TMP/search.yahoo.com.crt -CA $DIR_TMP/cactparental.crt -CAkey $DIR_TMP/cactparental.key -CAserial $DIR_TMP/ca.srl
+    openssl genrsa 1024 > $DIR_TMP/search.yahoo.com.key 2> /dev/null
+    openssl req -new -subj "/C=FR/ST=FRANCE/L=ici/O=ctparental/CN=search.yahoo.com" -key "$DIR_TMP/search.yahoo.com.key" > "$DIR_TMP/search.yahoo.com.csr"
+    openssl x509 -req -in "$DIR_TMP/search.yahoo.com.csr" -out "$DIR_TMP/search.yahoo.com.crt" -CA "$DIR_TMP/cactparental.crt" -CAkey "$DIR_TMP/cactparental.key" -CAserial "$DIR_TMP/ca.srl"
 
 ## instalation de la CA dans les ca de confiance.
-cp -f $DIR_TMP/cactparental.crt $CADIR/
-cp -f $DIR_TMP/cactparental.crt $DIRHTML
-cp -f $DIR_TMP/cactparental.crt $REPCAMOZ
+    cp -f "$DIR_TMP/cactparental.crt" "$CADIR/"
+    cp -f "$DIR_TMP/cactparental.crt" "$DIRHTML"
+    cp -f "$DIR_TMP/cactparental.crt" "$REPCAMOZ"
 ## instalation des certificats serveur
-cat $DIR_TMP/localhost.key $DIR_TMP/localhost.crt > $PEMSRVDIR/localhost.pem
-cat $DIR_TMP/duckduckgo.key $DIR_TMP/duckduckgo.crt > $PEMSRVDIR/duckduckgo.pem
-cat $DIR_TMP/search.yahoo.com.key $DIR_TMP/search.yahoo.com.crt > $PEMSRVDIR/search.yahoo.com.pem
-rm -rf $DIR_TMP
+    cat "$DIR_TMP/localhost.key $DIR_TMP/localhost.crt" > "$PEMSRVDIR/localhost.pem"
+    cat "$DIR_TMP/duckduckgo.key $DIR_TMP/duckduckgo.crt" > "$PEMSRVDIR/duckduckgo.pem"
+    cat "$DIR_TMP/search.yahoo.com.key" "$DIR_TMP/search.yahoo.com.crt" > "$PEMSRVDIR/search.yahoo.com.pem"
+    rm -rf "$DIR_TMP"
 
-updatecauser
-echo "</CActparental>"
+    updatecauser
+    echo "</CActparental>"
 }
 
 
