@@ -520,63 +520,61 @@ autoupdateoff() {
     $CRONrestart
 }
 adapt() {
-   echo adapt
-   date +%H:%M:%S
-   dnsmasqoff
-   $MFILEtmp
-   if [ ! -f "$DNS_FILTER_OSSI" ] ; then touch "$DNS_FILTER_OSSI"; fi
+    echo adapt
+    date +%H:%M:%S
+    dnsmasqoff
+    $MFILEtmp
+    if [ ! -f "$DNS_FILTER_OSSI" ] ; then touch "$DNS_FILTER_OSSI"; fi
 
-   if [ -d $tempDIR  ] ; then
-	  CATEGORIES_AVAILABLE=$tempDIR/categories_available
-	  ls -FR $tempDIR/blacklists | grep '/$' | sed -e "s/\///g" > $CATEGORIES_AVAILABLE
-          echo -n > $BL_CATEGORIES_AVAILABLE
-          echo -n > $WL_CATEGORIES_AVAILABLE
-          if [ ! -f $DIR_DNS_FILTER_AVAILABLE/ossi.conf ] ; then
-		echo > $DIR_DNS_FILTER_AVAILABLE/ossi.conf
-	  fi
-	  for categorie in $(cat $CATEGORIES_AVAILABLE) # creation des deux fichiers de categories (BL / WL)
-	  do
-		if [ -e $tempDIR/blacklists/$categorie/usage ]
-		then
-			is_whitelist="$(grep white $tempDIR/blacklists/$categorie/usage|wc -l)"
-		else
-			is_whitelist=0 # ou si le fichier 'usage' n'existe pas, on considère que la catégorie est une BL
-		fi
-		if [ $is_whitelist -eq "0" ]
-		then
-			echo "$categorie" >> "$BL_CATEGORIES_AVAILABLE"
-		else
-			echo "$categorie" >> "$WL_CATEGORIES_AVAILABLE"
-		fi
-	   done
-         echo -n $(gettext "blacklist and WhiteList , migration process. Please wait :")" "
-         for DOMAINE in `cat  $CATEGORIES_AVAILABLE`  # pour chaque catégorie
-         do
+    if [ -d $tempDIR  ] ; then
+        CATEGORIES_AVAILABLE=$tempDIR/categories_available
+        ls -FR $tempDIR/blacklists | grep '/$' | sed -e "s/\///g" > "$CATEGORIES_AVAILABLE"
+        echo -n > "$BL_CATEGORIES_AVAILABLE"
+        echo -n > "$WL_CATEGORIES_AVAILABLE"
+        if [ ! -f "$DIR_DNS_FILTER_AVAILABLE/ossi.conf" ]; then
+            touch "$DIR_DNS_FILTER_AVAILABLE/ossi.conf"
+        fi
+        for categorie in $(cat $CATEGORIES_AVAILABLE) # creation des deux fichiers de categories (BL / WL)
+        do
+            if [ -e "$tempDIR/blacklists/$categorie/usage" ]; then
+                is_whitelist="$(grep white $tempDIR/blacklists/$categorie/usage|wc -l)"
+            else
+                is_whitelist=0 # ou si le fichier 'usage' n'existe pas, on considère que la catégorie est une BL
+            fi
+            if [ $is_whitelist -eq 0 ]; then
+                echo "$categorie" >> "$BL_CATEGORIES_AVAILABLE"
+            else
+                echo "$categorie" >> "$WL_CATEGORIES_AVAILABLE"
+            fi
+        done
+        echo -n "$(gettext "blacklist and WhiteList , migration process. Please wait :")"
+        for DOMAINE in `cat  $CATEGORIES_AVAILABLE`  # pour chaque catégorie
+        do
             echo -n "."
               # suppression des @IP, de caractères acccentués et des lignes commentées ou vides
             cp -f "$tempDIR/blacklists/$DOMAINE/domains" "$FILE_tmp"
             $SED -r "/([0-9]{1,3}\.){3}[0-9]{1,3}/d;/[äâëêïîöôüû]/d;/^#.*/d;/^$/d;s/\.\{2,10\}/\./g" $FILE_tmp # supprime les suite de "." exemple: address=/fucking-big-tits..com/127.0.0.10 devient address=/fucking-big-tits.com/127.0.0.10
-	    is_blacklist=`grep $DOMAINE $BL_CATEGORIES_AVAILABLE |wc -l`
-	    if [ $is_blacklist -ge "1" ] ; then
+            is_blacklist="$(grep $DOMAINE $BL_CATEGORIES_AVAILABLE |wc -l)"
+            if [ $is_blacklist -ge 1 ] ; then
             	$SED "s?.*?address=/&/$PRIVATE_IP?g" "$FILE_tmp"  # Mise en forme dnsmasq des listes noires
                 mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE/$DOMAINE.conf"
             else
-		$SED "s?.*?server=/&/#?g" "$FILE_tmp"  # Mise en forme dnsmasq des listes blanches
-		mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE/$DOMAINE.conf"
+                $SED "s?.*?server=/&/#?g" "$FILE_tmp"  # Mise en forme dnsmasq des listes blanches
+                mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE/$DOMAINE.conf"
             fi
-         done
-   else
-         mkdir "$tempDIR"
-         echo -n "."
+        done
+    else
+        mkdir "$tempDIR"
+        echo -n "."
 			# suppression des @IP, de caractères acccentués et des lignes commentées ou vides
-         cp -f "$DNS_FILTER_OSSI $FILE_tmp"
-         $SED -r "([0-9]{1,3}\.){3}[0-9]{1,3}/d;/[äâëêïîöôüû]/d;/^#.*/d;/^$/d;s/\.\{2,10\}/\./g;s?.*?address=/&/$PRIVATE_IP?g" "$FILE_tmp"  # Mise en forme dnsmasq
-         mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE/ossi.conf"
-   fi
-   echo
-   $UMFILEtmp
-   rm -rf "$tempDIR"
-date +%H:%M:%S
+        cp -f "$DNS_FILTER_OSSI $FILE_tmp"
+        $SED -r "([0-9]{1,3}\.){3}[0-9]{1,3}/d;/[äâëêïîöôüû]/d;/^#.*/d;/^$/d;s/\.\{2,10\}/\./g;s?.*?address=/&/$PRIVATE_IP?g" "$FILE_tmp"  # Mise en forme dnsmasq
+        mv "$FILE_tmp" "$DIR_DNS_FILTER_AVAILABLE/ossi.conf"
+    fi
+    echo
+    $UMFILEtmp
+    rm -rf "$tempDIR"
+    date +%H:%M:%S
 }
 catChoice() {
     echo "<catChoice>"
@@ -603,7 +601,7 @@ reabdomaine () {
     echo "<reabdomaine>"
     date +%H:%M:%S
     $MFILEtmp
-    if [ ! -f "$DREAB" ]; then cat << EOF > $DREAB
+    if [ ! -f "$DREAB" ]; then cat << EOF > "$DREAB"
 EOF
     fi
     if [ ! -f "$DIR_DNS_BLACKLIST_ENABLED/ossi.conf" ] ; then
