@@ -73,9 +73,9 @@ FILE_GCTOFFCONF="$DIR_CONF/GCToff.conf"
 FILE_HCOMPT="$DIR_CONF/CThourscompteur"
 FILE_HCONF="$DIR_CONF/CThours.conf"
 if [ ! -f $FILE_CONF ] ; then
-mkdir -p $DIR_CONF
-mkdir -p /usr/local/share/CTparental/
-cat << EOF > $FILE_CONF
+    mkdir -p "$DIR_CONF"
+    mkdir -p /usr/local/share/CTparental/
+    cat << EOF > "$FILE_CONF"
 LASTUPDATE=0
 DNSMASQ=BLACK
 AUTOUPDATE=OFF
@@ -104,7 +104,7 @@ COMMONFILEGS="common-auth"
 GESTIONNAIREDESESSIONS=" login gdm lightdm slim kdm xdm lxdm gdm3 "
 FILEPAMTIMECONF="/etc/security/time.conf"
 DIRPAM="/etc/pam.d/"
-DAYS=${DAYS:="$(gettext "monday") $(gettext "tuesday") $(gettext "wednesday") $(gettext "thursday") $(gettext "friday") $(gettext "saturday") $(gettext "sunday") "}
+DAYS="${DAYS:="$(gettext "monday") $(gettext "tuesday") $(gettext "wednesday") $(gettext "thursday") $(gettext "friday") $(gettext "saturday") $(gettext "sunday") "}"
 DAYS=( $DAYS )
 DAYSPAM=( Mo Tu We Th Fr Sa Su )
 DAYSCRON=( mon tue wed thu fri sat sun )
@@ -269,7 +269,7 @@ MAXDAYSFORUPDATE="7" # update tous les 7 jours
 CHEMINCTPARENTLE=$(readlink -f $0)
 
 initblenabled () {
-   cat << EOF > $CATEGORIES_ENABLED
+   cat << EOF > "$CATEGORIES_ENABLED"
 adult
 agressif
 dangerous_material
@@ -350,32 +350,33 @@ confprivoxy () {
 	fi
 	unset test
 
-echo '{{alias}}' > "${PRIVOXYCTA}"
-echo '+crunch-all-cookies = +crunch-incoming-cookies +crunch-outgoing-cookies' >> "${PRIVOXYCTA}"
-echo '-crunch-all-cookies = -crunch-incoming-cookies -crunch-outgoing-cookies' >> "${PRIVOXYCTA}"
-echo ' allow-all-cookies  = -crunch-all-cookies -session-cookies-only -filter{content-cookies}' >> "${PRIVOXYCTA}"
-echo ' allow-popups       = -filter{all-popups} -filter{unsolicited-popups}' >> "${PRIVOXYCTA}"
-echo '+block-as-image     = +block{Blocked image request.} +handle-as-image' >> "${PRIVOXYCTA}"
-echo '-block-as-image     = -block' >> "${PRIVOXYCTA}"
-echo 'fragile     = -block -crunch-all-cookies -filter -fast-redirects -hide-referer -prevent-compression' >> "${PRIVOXYCTA}"
-echo 'shop        = -crunch-all-cookies allow-popups' >> "${PRIVOXYCTA}"
-echo 'myfilters   = +filter{html-annoyances} +filter{js-annoyances} +filter{all-popups}\' >> "${PRIVOXYCTA}"
-echo '              +filter{webbugs} +filter{banners-by-size}' >> "${PRIVOXYCTA}"
-echo 'allow-ads   = -block -filter{banners-by-size} -filter{banners-by-link}' >> "${PRIVOXYCTA}"
-echo '{ fragile }' >> "${PRIVOXYCTA}"
-echo 'http://127.0.0.10.*' >> "${PRIVOXYCTA}"
-echo 'http://localhost.*' >> "${PRIVOXYCTA}"
-echo '# BING Add &adlt=strict' >> "${PRIVOXYCTA}"
-echo '{+redirect{s@$@&adlt=strict@}}' >> "${PRIVOXYCTA}"
-echo '.bing./.*[&?]q=' >> "${PRIVOXYCTA}"
-echo '{-redirect}' >> "${PRIVOXYCTA}"
-echo '.bing./.*&adlt=strict' >> "${PRIVOXYCTA}"
-echo >> "${PRIVOXYCTA}"
-echo '# dailymotion.com ' >> "${PRIVOXYCTA}"
-echo '# remplace http://www.dailymotion.com/family_filter?enable=false....' >> "${PRIVOXYCTA}"
-echo '# par http://www.dailymotion.com/family_filter?enable=true...' >> "${PRIVOXYCTA}"
-echo '{+redirect{s@enable=[^&]+@enable=true@}}' >> "${PRIVOXYCTA}"
-echo ' .dailymotion.*/.*enable=(?!true)' >> "${PRIVOXYCTA}"
+mssg="{{alias}}
++crunch-all-cookies = +crunch-incoming-cookies +crunch-outgoing-cookies
+-crunch-all-cookies = -crunch-incoming-cookies -crunch-outgoing-cookies
+ allow-all-cookies  = -crunch-all-cookies -session-cookies-only -filter{content-cookies}
+ allow-popups       = -filter{all-popups} -filter{unsolicited-popups}
++block-as-image     = +block{Blocked image request.} +handle-as-image
+-block-as-image     = -block
+fragile     = -block -crunch-all-cookies -filter -fast-redirects -hide-referer -prevent-compression
+shop        = -crunch-all-cookies allow-popups
+myfilters   = +filter{html-annoyances} +filter{js-annoyances} +filter{all-popups}\
+              +filter{webbugs} +filter{banners-by-size}
+allow-ads   = -block -filter{banners-by-size} -filter{banners-by-link}
+{ fragile }
+http://127.0.0.10.*
+http://localhost.*
+# BING Add &adlt=strict
+{+redirect{s@$@&adlt=strict@}}
+.bing./.*[&?]q=
+{-redirect}
+.bing./.*&adlt=strict
+
+# dailymotion.com
+# remplace http://www.dailymotion.com/family_filter?enable=false....
+# par http://www.dailymotion.com/family_filter?enable=true...
+{+redirect{s@enable=[^&]+@enable=true@}}
+ .dailymotion.*/.*enable=(?!true)"
+echo "${mssg}" > "${PRIVOXYCTA}"
 
 
 $PRIVOXYrestart
