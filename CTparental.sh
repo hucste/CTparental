@@ -888,78 +888,72 @@ $IPTABLES -A OUTPUT -p tcp -m tcp --dport 465 -j ACCEPT      # smtp/ssl
 }
 
 iptablesreload () {
-   echo "<iptablesreload>"
-   ### SUPPRESSION de TOUTES LES ANCIENNES TABLES (OUVRE TOUT!!) ###
-   $IPTABLES -F
-   $IPTABLES -X
-   $IPTABLES -t nat -D OUTPUT -j ctparental 2> /bin/null
-   $IPTABLES -t nat -F ctparental  2> /bin/null
-   $IPTABLES -t nat -X ctparental  2> /bin/null
-   $IPTABLES -P INPUT ACCEPT
-   $IPTABLES -P OUTPUT ACCEPT
-   $IPTABLES -P FORWARD ACCEPT
-   if [ ! $FILTRAGEISOFF -eq 1 ];then
-	 $IPTABLES -t nat -N ctparental
-     $IPTABLES -t nat -A OUTPUT -j ctparental
+    echo "<iptablesreload>"
+    ### SUPPRESSION de TOUTES LES ANCIENNES TABLES (OUVRE TOUT!!) ###
+    $IPTABLES -F
+    $IPTABLES -X
+    $IPTABLES -t nat -D OUTPUT -j ctparental 2> /bin/null
+    $IPTABLES -t nat -F ctparental  2> /bin/null
+    $IPTABLES -t nat -X ctparental  2> /bin/null
+    $IPTABLES -P INPUT ACCEPT
+    $IPTABLES -P OUTPUT ACCEPT
+    $IPTABLES -P FORWARD ACCEPT
+    if [ ! $FILTRAGEISOFF -eq 1 ];then
+        $IPTABLES -t nat -N ctparental
+        $IPTABLES -t nat -A OUTPUT -j ctparental
 
-      # Force privoxy a utiliser dnsmasq sur le port 54
-	  $IPTABLES -t nat -A ctparental -m owner --uid-owner "$PROXYuser" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
+        # Force privoxy a utiliser dnsmasq sur le port 54
+        $IPTABLES -t nat -A ctparental -m owner --uid-owner "$PROXYuser" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
 
-	  # on interdit l'accès a bing en https .
-	  ipbing=$(cat $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf | grep "address=/.bing.com/" | cut -d "/" -f3)
-	  $IPTABLES -A OUTPUT -d $ipbing -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a bing
+        # on interdit l'accès a bing en https .
+        ipbing="$(cat $DIR_DNS_BLACKLIST_ENABLED/forcesafesearch.conf | grep "address=/.bing.com/" | cut -d "/" -f3)"
+        $IPTABLES -A OUTPUT -d ${ipbing} -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a bing
 
-	  for ipdailymotion in $(host -ta dailymotion.com|cut -d" " -f4)
-	  do
-		$IPTABLES -A OUTPUT -d $ipdailymotion -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a dailymotion.com
-	  done
+        for ipdailymotion in $(host -ta dailymotion.com|cut -d" " -f4); do
+            $IPTABLES -A OUTPUT -d ${ipdailymotion} -m owner --uid-owner "$PROXYuser" -p tcp --dport 443 -j REJECT # on rejet l'acces https a dailymotion.com
+        done
 
-      for user in `listeusers` ; do
-      if  [ $(groups $user | grep -c -E "( ctoff$)|( ctoff )" ) -eq 0 ];then
-         #on rediriges les requet DNS des usagers filtrés sur dnsmasq
-         $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 53 -j DNAT --to 127.0.0.1:54
-         $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
-         #force passage par dansgourdian pour les utilisateurs filtrés
-		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 80 -j DNAT --to 127.0.0.1:$DANSGport
-		 $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport $PROXYport -j DNAT --to 127.0.0.1:$DANSGport
-		 #$IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 443 -j DNAT --to 127.0.0.1:$DANSGport  # proxy https transparent n'est pas possible avec privoxy
-		 $IPTABLES -A OUTPUT ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 443 -j REJECT # on interdit l'aces https sans passer par le proxy pour les utilisateur filtré.
-      fi
-      done
-   fi
+        for user in $(listeusers) ; do
+            if  [ $(groups $user | grep -c -E "( ctoff$)|( ctoff )" ) -eq 0 ];then
+            #on rediriges les requet DNS des usagers filtrés sur dnsmasq
+                $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 53 -j DNAT --to 127.0.0.1:54
+                $IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p udp --dport 53 -j DNAT --to 127.0.0.1:54
+            #force passage par dansgourdian pour les utilisateurs filtrés
+                $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 80 -j DNAT --to 127.0.0.1:$DANSGport
+                $IPTABLES -t nat -A ctparental ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport $PROXYport -j DNAT --to 127.0.0.1:$DANSGport
+                #$IPTABLES -t nat -A ctparental -m owner --uid-owner "$user" -p tcp --dport 443 -j DNAT --to 127.0.0.1:$DANSGport  # proxy https transparent n'est pas possible avec privoxy
+                $IPTABLES -A OUTPUT ! -d 127.0.0.1/8 -m owner --uid-owner "$user" -p tcp --dport 443 -j REJECT # on interdit l'aces https sans passer par le proxy pour les utilisateur filtré.
+            fi
+        done
+    fi
 
-   if [ $(cat $FILE_CONF | grep -c IPRULES=ON ) -eq 1 ];then
-    ipglobal
-   fi
+    if [ $(cat $FILE_CONF | grep -c IPRULES=ON ) -eq 1 ]; then ipglobal; fi
 
 # Save configuration so that it survives a reboot
-   $IPTABLESsave
+    $IPTABLESsave
 
-updatecauser
-setproxy
-echo "</iptablesreload>"
+    updatecauser
+    setproxy
+    echo "</iptablesreload>"
 }
 updatecauser () {
-echo "<updatecauser>"
-for user in `listeusers` ; do
-	HOMEPCUSER=$(getent passwd "$user" | cut -d ':' -f6)
-	if [ -d $HOMEPCUSER ] ;then
+    echo "<updatecauser>"
+    for user in $(listeusers); do
+        HOMEPCUSER="$(getent passwd "$user" | cut -d ':' -f6)"
+        if [ -d "$HOMEPCUSER" ] ;then
 			#on install le certificat dans tous les prifile firefoxe utilisateur existant
-		for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
+            for profilefirefox in $(cat $HOMEPCUSER/.mozilla/firefox/profiles.ini | grep Path= | cut -d"=" -f2) ; do
 			# on supprime tous les anciens certificats
-			while true
-			do
-				certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
-				if [ ! $? -eq 0 ];then
-					break
-				fi
-			done
+                while true; do
+                    certutil -D -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -n"CActparental - ctparental" 2&> /dev/null
+                    if [ ! $? -eq 0 ];then break; fi
+                done
 			# on ajoute le nouveau certificat
-			certutil -A -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -i $DIRHTML/cactparental.crt -n"CActparental - ctparental" -t "CT,c,c"
-		done
-	fi
-done
-echo "</updatecauser>"
+                certutil -A -d $HOMEPCUSER/.mozilla/firefox/$profilefirefox/ -i $DIRHTML/cactparental.crt -n"CActparental - ctparental" -t "CT,c,c"
+            done
+        fi
+    done
+    echo "</updatecauser>"
 }
 iptablesoff () {
 
@@ -975,8 +969,8 @@ iptablesoff () {
    unsetproxy
 }
 dnsmasqwhitelistonly  () {
-$SED "s?^DNSMASQ.*?DNSMASQ=WHITE?g" $FILE_CONF
-cat << EOF > $DNSMASQCONF
+    $SED "s?^DNSMASQ.*?DNSMASQ=WHITE?g" "$FILE_CONF"
+    cat << EOF > "$DNSMASQCONF"
 # Configuration file for "dnsmasq with blackhole"
 # Inclusion de la blacklist <domains> de Toulouse dans la configuration
 conf-dir=$DIR_DNS_WHITELIST_ENABLED
@@ -996,29 +990,29 @@ address=/localhost/127.0.0.1
 address=/#/$PRIVATE_IP #redirige vers $PRIVATE_IP pour tout ce qui n'a pas été resolu dans les listes blanches
 EOF
 
-$DNSMASQrestart
-$DANSGOUARDIANrestart
-$PRIVOXYrestart
+    $DNSMASQrestart
+    $DANSGOUARDIANrestart
+    $PRIVOXYrestart
 }
 
 
 FoncHTTPDCONF () {
-echo "<FoncHTTPDCONF>"
-$LIGHTTPDstop
-rm -rf $DIRHTML/*
-mkdir $DIRHTML 2> /dev/null
-if [ ! -z $DIRhtmlPersonaliser ];then
-   cp -r $DIRhtmlPersonaliser/* $DIRHTML
-else
- cp -r /usr/local/share/CTparental/www/CTparental/* $DIRHTML
+    echo "<FoncHTTPDCONF>"
+    $LIGHTTPDstop
+    rm -rf "$DIRHTML/*"
+    mkdir "$DIRHTML" 2> /dev/null
+    if [ ! -z "$DIRhtmlPersonaliser" ];then
+        cp -r "$DIRhtmlPersonaliser/*" "$DIRHTML"
+    else
+        cp -r /usr/local/share/CTparental/www/CTparental/* "$DIRHTML"
+    fi
 
-fi
+    USERHTTPD="$(getent passwd | awk -F ':' '/\/var\/www/ { print $1 }')"
+    GROUPHTTPD="$(getent group | awk -F ':' '/'${USERHTTPD}'/ { print $1 }')"
+    chmod 0644 "$FILE_CONF"
+    chown root:$GROUPHTTPD "$FILE_CONF"
 
-USERHTTPD=$(cat /etc/passwd | grep /var/www | cut -d":" -f1)
-GROUPHTTPD=$(cat /etc/group | grep $USERHTTPD | cut -d":" -f1)
-chmod 644 $FILE_CONF
-chown root:$GROUPHTTPD $FILE_CONF
-cat << EOF > $MAINCONFHTTPD
+    cat << EOF > "$MAINCONFHTTPD"
 server.modules = (
 "mod_access",
 "mod_alias",
@@ -1050,10 +1044,10 @@ include_shell "/usr/share/lighttpd/create-mime.assign.pl"
 include_shell "/usr/share/lighttpd/include-conf-enabled.pl"
 EOF
 
-mkdir -p /usr/share/lighttpd/
+    mkdir -p /usr/share/lighttpd/
 
-if [ ! -f /usr/share/lighttpd/create-mime.assign.pl ];then
-cat << EOF > /usr/share/lighttpd/create-mime.assign.pl
+    if [ ! -f /usr/share/lighttpd/create-mime.assign.pl ]; then
+        cat << EOF > /usr/share/lighttpd/create-mime.assign.pl
 #!/usr/bin/perl -w
 use strict;
 open MIMETYPES, "/etc/mime.types" or exit;
@@ -1075,12 +1069,12 @@ while(<MIMETYPES>) {
 }
 print ")\n";
 EOF
-chmod +x /usr/share/lighttpd/create-mime.assign.pl
-fi
+        chmod +x /usr/share/lighttpd/create-mime.assign.pl
+    fi
 
 
-if [ ! -f /usr/share/lighttpd/include-conf-enabled.pl ];then
-cat << EOF > /usr/share/lighttpd/include-conf-enabled.pl
+    if [ ! -f /usr/share/lighttpd/include-conf-enabled.pl ];then
+        cat << EOF > /usr/share/lighttpd/include-conf-enabled.pl
 #!/usr/bin/perl -wl
 
 use strict;
@@ -1097,28 +1091,28 @@ for my \$file (@files)
         print "include \"\$file\"";
 }
 EOF
-chmod +x /usr/share/lighttpd/include-conf-enabled.pl
+        chmod +x /usr/share/lighttpd/include-conf-enabled.pl
+    fi
 
-fi
-
-mkdir -p $DIRCONFENABLEDHTTPD
-mkdir -p $DIRadminHTML
-cp -rf CTadmin/* $DIRadminHTML/
+    mkdir -p "$DIRCONFENABLEDHTTPD"
+    mkdir -p "$DIRadminHTML"
+    cp -rf CTadmin/* "$DIRadminHTML/"
 
 ### configuration du login mot de passe de l'interface d'administration
-if [ $nomanuel -eq 0 ]; then
-	configloginpassword
-else
+    if [ ${nomanuel} -eq 0 ]; then
+        configloginpassword
+    else
 	## variable récupérer par éritage du script DEBIAN/postinst
-	addadminhttpd "$debconfloginhttp" "$debconfpassword"
-	unset debconfpassword
-	unset debconfloginhttp
-fi
+        addadminhttpd "$debconfloginhttp" "$debconfpassword"
+        unset debconfpassword
+        unset debconfloginhttp
+    fi
 
-mkdir /run/lighttpd/ 2> /dev/null
-chmod 770 /run/lighttpd/
-chown root:$GROUPHTTPD /run/lighttpd/
-cat << EOF > $CTPARENTALCONFHTTPD
+    mkdir /run/lighttpd/ 2> /dev/null
+    chmod 770 /run/lighttpd/
+    chown root:${GROUPHTTPD} /run/lighttpd/
+
+    cat << EOF > "$CTPARENTALCONFHTTPD"
 
 fastcgi.server = (
     ".php" => (
@@ -1182,87 +1176,88 @@ server.error-handler-404 ="err404.php"
 }
 
 EOF
-if [ -e $DIRHTML/index.php ] ;  then
-ln -s $DIRHTML/index.php $DIRHTML/err404.php
-else
-	if [ -e $DIRHTML/index.html] ;  then
-	ln -s  $DIRHTML/index.html $DIRHTML/err404.html
-	fi
-	$SED "s?^server.error-handler-404 =.*?server.error-handler-404 =\"err404.html\"?g" $CTPARENTALCONFHTTPD
-fi
+
+    if [ -e "$DIRHTML/index.php" ];  then
+        ln -s "$DIRHTML/index.php" "$DIRHTML/err404.php"
+    else
+        if [ -e "$DIRHTML/index.html" ];  then
+            ln -s "$DIRHTML/index.html" "$DIRHTML/err404.html"
+        fi
+        $SED "s?^server.error-handler-404 =.*?server.error-handler-404 =\"err404.html\"?g" "$CTPARENTALCONFHTTPD"
+    fi
 
 
-chown root:$GROUPHTTPD $DREAB
-chmod 660 $DREAB
-chown root:$GROUPHTTPD $DNS_FILTER_OSSI
-chmod 660 $DNS_FILTER_OSSI
-chown root:$GROUPHTTPD $CATEGORIES_ENABLED
-chmod 660 $CATEGORIES_ENABLED
-chmod 660 /etc/sudoers
-chown root:$GROUPHTTPD $DIRDAN"lists/bannedextensionlist"
-chmod 664 $DIRDAN"lists/bannedextensionlist"
-chown root:$GROUPHTTPD $DIRDAN"lists/bannedmimetypelist"
-chmod 664 $DIRDAN"lists/bannedmimetypelist"
-chown root:$GROUPHTTPD $DIRDAN"lists/bannedsitelist"
-chmod 664 $DIRDAN"lists/bannedsitelist"
+    chown root:$GROUPHTTPD $DREAB
+    chmod 660 $DREAB
+    chown root:$GROUPHTTPD $DNS_FILTER_OSSI
+    chmod 660 $DNS_FILTER_OSSI
+    chown root:$GROUPHTTPD $CATEGORIES_ENABLED
+    chmod 660 $CATEGORIES_ENABLED
+    chmod 660 /etc/sudoers
+    chown root:$GROUPHTTPD $DIRDAN"lists/bannedextensionlist"
+    chmod 664 $DIRDAN"lists/bannedextensionlist"
+    chown root:$GROUPHTTPD $DIRDAN"lists/bannedmimetypelist"
+    chmod 664 $DIRDAN"lists/bannedmimetypelist"
+    chown root:$GROUPHTTPD $DIRDAN"lists/bannedsitelist"
+    chmod 664 $DIRDAN"lists/bannedsitelist"
 
-sudotest=`grep Defaults:$USERHTTPD /etc/sudoers |wc -l`
-if [ $sudotest -ge "1" ] ; then
-    $SED "s?^Defaults:$USERHTTPD.*requiretty.*?Defaults:$USERHTTPD     \!requiretty?g" /etc/sudoers
-else
-    echo "Defaults:$USERHTTPD     !requiretty" >> /etc/sudoers
-fi
+    sudotest="$(grep Defaults:$USERHTTPD /etc/sudoers |wc -l)"
+    if [ ${sudotest} -ge 1 ] ; then
+        $SED "s?^Defaults:$USERHTTPD.*requiretty.*?Defaults:$USERHTTPD     \!requiretty?g" /etc/sudoers
+    else
+        echo "Defaults:$USERHTTPD     !requiretty" >> /etc/sudoers
+    fi
 
-sudotest=`grep "$USERHTTPD ALL=" /etc/sudoers |wc -l`
-if [ $sudotest -ge "1" ] ; then
-    $SED "s?^$USERHTTPD.*?$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff?g" /etc/sudoers
-else
-    echo "$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff" >> /etc/sudoers
-fi
+    sudotest="$(grep "$USERHTTPD ALL=" /etc/sudoers |wc -l)"
+    if [ ${sudotest} -ge 1 ] ; then
+        $SED "s?^$USERHTTPD.*?$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff?g" /etc/sudoers
+    else
+        echo "$USERHTTPD ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -dgreload,/usr/local/bin/CTparental.sh -gctalist,/usr/local/bin/CTparental.sh -gctulist,/usr/local/bin/CTparental.sh -gcton,/usr/local/bin/CTparental.sh -gctoff,/usr/local/bin/CTparental.sh -tlu,/usr/local/bin/CTparental.sh -trf,/usr/local/bin/CTparental.sh -dble,/usr/local/bin/CTparental.sh -ubl,/usr/local/bin/CTparental.sh -dl,/usr/local/bin/CTparental.sh -on,/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -aupon,/usr/local/bin/CTparental.sh -aupoff" >> /etc/sudoers
+    fi
 
+    sudotest="$(grep %ctoff /etc/sudoers |wc -l)"
+    if [ ${sudotest} -ge 1 ] ; then
+        $SED "s?^%ctoff.*?%ctoff ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -on?g" /etc/sudoers
+    else
+        echo "%ctoff ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -on"  >> /etc/sudoers
+    fi
 
-sudotest=`grep %ctoff /etc/sudoers |wc -l`
-if [ $sudotest -ge "1" ] ; then
-   $SED "s?^%ctoff.*?%ctoff ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -on?g" /etc/sudoers
-else
-   echo "%ctoff ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -off,/usr/local/bin/CTparental.sh -on"  >> /etc/sudoers
-fi
-sudotest=`grep "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh" /etc/sudoers |wc -l`
-if [ $sudotest -ge "1" ] ; then
-	$SED "s?^ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh.*?ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -on?g" /etc/sudoers
-else
-	echo "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -on" >> /etc/sudoers
-fi
-unset sudotest
+    sudotest="$(grep "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh" /etc/sudoers |wc -l)"
+    if [ ${sudotest} -ge 1 ] ; then
+        $SED "s?^ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh.*?ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -on?g" /etc/sudoers
+    else
+        echo "ALL  ALL=(ALL) NOPASSWD:/usr/local/bin/CTparental.sh -on" >> /etc/sudoers
+    fi
+    unset sudotest
 
-chmod 440 /etc/sudoers
-if [ ! -f $FILE_HCONF ] ; then
-	echo > $FILE_HCONF
-fi
-chown root:$GROUPHTTPD $FILE_HCONF
-chmod 660 $FILE_HCONF
-if [ -f $FILE_GCTOFFCONF ] ; then
-	chown root:$GROUPHTTPD $FILE_GCTOFFCONF
-	chmod 660 $FILE_GCTOFFCONF
-fi
+    chmod 0440 /etc/sudoers
+    if [ ! -f "$FILE_HCONF" ] ; then touch "$FILE_HCONF"; fi
 
-if [ ! -f $FILE_HCOMPT ] ; then
-	echo "date=$(date +%D)" > $FILE_HCOMPT
-fi
-chown root:$GROUPHTTPD $FILE_HCOMPT
-chmod 660 $FILE_HCOMPT
+    chown root:$GROUPHTTPD "$FILE_HCONF"
+    chmod 0660 "$FILE_HCONF"
+    if [ -f "$FILE_GCTOFFCONF" ] ; then
+        chown root:$GROUPHTTPD "$FILE_GCTOFFCONF"
+        chmod 0660 $FILE_GCTOFFCONF
+    fi
 
-chown -R root:$GROUPHTTPD $DIRHTML
-chown -R root:$GROUPHTTPD $DIRadminHTML
-CActparental
-$LIGHTTPDstart
-test=$?
-if [ ! $test -eq 0 ];then
-	echo $(gettext "Error launching of lighttpd Service")
-	set -e
-	exit 1
-fi
-echo "</FoncHTTPDCONF>"
+    if [ ! -f "$FILE_HCOMPT" ] ; then echo "date=$(date +%D)" > "$FILE_HCOMPT"; fi
+
+    chown root:$GROUPHTTPD "$FILE_HCOMPT"
+    chmod 0660 "$FILE_HCOMPT"
+
+    chown -R root:$GROUPHTTPD "$DIRHTML"
+    chown -R root:$GROUPHTTPD "$DIRadminHTML"
+
+    CActparental
+    $LIGHTTPDstart
+    test=$?
+    if [ ! $test -eq 0 ];then
+        echo "$(gettext "Error launching of lighttpd Service")"
+        set -e
+        exit 1
+    fi
+
+    echo "</FoncHTTPDCONF>"
 }
 configloginpassword () {
 PTNlogin='^[a-zA-Z0-9]*$'
