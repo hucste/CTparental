@@ -1010,7 +1010,7 @@ FoncHTTPDCONF () {
     USERHTTPD="$(getent passwd | awk -F ':' '/\/var\/www/ { print $1 }')"
     GROUPHTTPD="$(getent group | awk -F ':' '/'${USERHTTPD}'/ { print $1 }')"
     chmod 0644 "$FILE_CONF"
-    chown root:$GROUPHTTPD "$FILE_CONF"
+    chown root:${GROUPHTTPD} "$FILE_CONF"
 
     cat << EOF > "$MAINCONFHTTPD"
 server.modules = (
@@ -1109,7 +1109,7 @@ EOF
     fi
 
     mkdir /run/lighttpd/ 2> /dev/null
-    chmod 770 /run/lighttpd/
+    chmod 0770 /run/lighttpd/
     chown root:${GROUPHTTPD} /run/lighttpd/
 
     cat << EOF > "$CTPARENTALCONFHTTPD"
@@ -1187,19 +1187,19 @@ EOF
     fi
 
 
-    chown root:$GROUPHTTPD $DREAB
-    chmod 660 $DREAB
-    chown root:$GROUPHTTPD $DNS_FILTER_OSSI
-    chmod 660 $DNS_FILTER_OSSI
-    chown root:$GROUPHTTPD $CATEGORIES_ENABLED
-    chmod 660 $CATEGORIES_ENABLED
-    chmod 660 /etc/sudoers
-    chown root:$GROUPHTTPD $DIRDAN"lists/bannedextensionlist"
-    chmod 664 $DIRDAN"lists/bannedextensionlist"
-    chown root:$GROUPHTTPD $DIRDAN"lists/bannedmimetypelist"
-    chmod 664 $DIRDAN"lists/bannedmimetypelist"
-    chown root:$GROUPHTTPD $DIRDAN"lists/bannedsitelist"
-    chmod 664 $DIRDAN"lists/bannedsitelist"
+    chown root:${GROUPHTTPD} "$DREAB"
+    chmod 0660 "$DREAB"
+    chown root:${GROUPHTTPD} "$DNS_FILTER_OSSI"
+    chmod 0660 "$DNS_FILTER_OSSI"
+    chown root:${GROUPHTTPD} "$CATEGORIES_ENABLED"
+    chmod 0660 "$CATEGORIES_ENABLED"
+    chmod 0660 /etc/sudoers
+    chown root:${GROUPHTTPD} "${DIRDAN}lists/bannedextensionlist"
+    chmod 0664 "${DIRDAN}lists/bannedextensionlist"
+    chown root:${GROUPHTTPD} "${DIRDAN}lists/bannedmimetypelist"
+    chmod 0664 "${DIRDAN}lists/bannedmimetypelist"
+    chown root:${GROUPHTTPD} "${DIRDAN}lists/bannedsitelist"
+    chmod 0664 "${DIRDAN}lists/bannedsitelist"
 
     sudotest="$(grep Defaults:$USERHTTPD /etc/sudoers |wc -l)"
     if [ ${sudotest} -ge 1 ] ; then
@@ -1233,25 +1233,25 @@ EOF
     chmod 0440 /etc/sudoers
     if [ ! -f "$FILE_HCONF" ] ; then touch "$FILE_HCONF"; fi
 
-    chown root:$GROUPHTTPD "$FILE_HCONF"
+    chown root:${GROUPHTTPD} "$FILE_HCONF"
     chmod 0660 "$FILE_HCONF"
     if [ -f "$FILE_GCTOFFCONF" ] ; then
-        chown root:$GROUPHTTPD "$FILE_GCTOFFCONF"
+        chown root:${GROUPHTTPD} "$FILE_GCTOFFCONF"
         chmod 0660 $FILE_GCTOFFCONF
     fi
 
     if [ ! -f "$FILE_HCOMPT" ] ; then echo "date=$(date +%D)" > "$FILE_HCOMPT"; fi
 
-    chown root:$GROUPHTTPD "$FILE_HCOMPT"
+    chown root:${GROUPHTTPD} "$FILE_HCOMPT"
     chmod 0660 "$FILE_HCOMPT"
 
-    chown -R root:$GROUPHTTPD "$DIRHTML"
-    chown -R root:$GROUPHTTPD "$DIRadminHTML"
+    chown -R root:${GROUPHTTPD} "$DIRHTML"
+    chown -R root:${GROUPHTTPD} "$DIRadminHTML"
 
     CActparental
+
     $LIGHTTPDstart
-    test=$?
-    if [ ! $test -eq 0 ];then
+    if [ $? -ne 0 ];then
         echo "$(gettext "Error launching of lighttpd Service")"
         set -e
         exit 1
