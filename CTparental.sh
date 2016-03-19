@@ -1260,21 +1260,17 @@ EOF
     echo "</FoncHTTPDCONF>"
 }
 configloginpassword () {
-PTNlogin='^[a-zA-Z0-9]*$'
-while (true)
-do
-loginhttp=$(whiptail --title "$(gettext "Login")" --nocancel --inputbox "$(gettext "Enter login to the administration interface")
+    PTNlogin='^[a-zA-Z0-9]*$'
+    while true; do
+        loginhttp=$(whiptail --title "$(gettext "Login")" --nocancel --inputbox "$(gettext "Enter login to the administration interface")
 $(gettext "- Only letters or numbers.")
 $(gettext "- 6 characters minimum:")" 10 60 3>&1 1>&2 2>&3)
-	if [ $(expr $loginhttp : $PTNlogin) -gt 6  ];then
-		break
-	fi
-done
-while (true)
-do
-password=$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Enter your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)
-		password2=$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Confirm your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)
-		if [ $password = $password2 ] ; then
+        if [ $(expr $loginhttp : $PTNlogin) -gt 6  ];then break; fi
+    done
+    while true; do
+        password="$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Enter your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)"
+		password2="$(whiptail --title "$(gettext "Password")" --nocancel --passwordbox "$(gettext "Confirm your password and press OK to continue.")" 10 60 3>&1 1>&2 2>&3)"
+		if [ "$password" = "$password2" ] ; then
 
 			if [ $(echo $password | grep -E [a-z] | grep -E [0-9] | grep -E [A-Z] | grep -E '[&éè~#{}()ç_@à?.;:/!,$<>=£%]' | wc -c ) -ge 8 ] ; then
 				break
@@ -1285,11 +1281,10 @@ $(gettext "and one special character among the following") &éè~#{}()ç_@à?.;:
 			fi
 		else
 		    whiptail --title "$(gettext "Password")" --msgbox "$(gettext "The password entered is not identical to the first.")" 14 60
-
 		fi
+    done
 
-done
-addadminhttpd "$loginhttp" "$password"
+    addadminhttpd "$loginhttp" "$password"
 }
 CActparental () {
 echo "<CActparental>"
